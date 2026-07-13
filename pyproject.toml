@@ -9,6 +9,7 @@ description = "Deterministic reliability evaluation for code-review agents"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "httpx>=0.28,<1",
   "pydantic>=2.12,<3",
   "typer>=0.21,<1",
 ]
@@ -40,6 +41,9 @@ packages = ["src/codereviewops"]
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
+markers = [
+  "live: opt-in test that makes one real provider request",
+]
 
 [tool.ruff]
 target-version = "py312"

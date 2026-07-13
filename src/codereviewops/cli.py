@@ -29,12 +29,16 @@ def review(
     ],
     provider: Annotated[
         str,
-        typer.Option("--provider", help="Review provider (Milestone 1: replay)."),
+        typer.Option("--provider", help="Review provider: replay, groq, or mistral."),
     ],
     output_dir: Annotated[
         Path,
         typer.Option("--output-dir", help="Directory for run.json and report.md."),
     ],
+    model: Annotated[
+        str | None,
+        typer.Option("--model", help="Required model identifier for live providers."),
+    ] = None,
     overwrite: Annotated[
         bool,
         typer.Option("--overwrite", help="Replace existing output artifacts."),
@@ -43,7 +47,7 @@ def review(
     """Run one benchmark review and write its evaluation artifacts."""
 
     try:
-        benchmark, artifact = run_task(task, provider)
+        benchmark, artifact = run_task(task, provider, model)
         run_path, report_path = write_artifacts(
             output_dir, benchmark, artifact, overwrite=overwrite
         )

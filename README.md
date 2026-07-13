@@ -3,7 +3,9 @@
 CodeReviewOps is a local, deterministic harness for measuring whether a code-review
 agent finds expected problems in a pull request without inventing unsupported ones.
 Milestone 1 uses synthetic fixtures and a replay provider so evaluation is reproducible,
-auditable, and does not require API keys or network access.
+auditable, and does not require API keys or network access. Milestone 2 adds direct,
+single-request Groq and Mistral inference for small opt-in evaluations; free-tier limits
+and model availability are controlled by those providers.
 
 ## What Milestone 1 does
 
@@ -23,6 +25,8 @@ Python 3.12 and uv are required.
 
     uv sync --frozen
 
+### Deterministic replay
+
 Run the synthetic HTTP retry benchmark:
 
     uv run codereviewops review --task benchmarks/tasks/http_retry_001.json --provider replay --output-dir artifacts/http_retry_001
@@ -37,17 +41,43 @@ files are restored and partial new files are removed. Because the result uses tw
 filenames, both files cannot become visible at the exact same filesystem instant;
 concurrent readers should honor the same lock.
 
+### Live inference
+
+Live runs require an explicit model and the provider's API key. The CLI reads only
+`GROQ_API_KEY` or `MISTRAL_API_KEY`; do not commit keys or place them in benchmark
+files. For example, in Command Prompt:
+
+    set GROQ_API_KEY=your-key
+    uv run codereviewops review --task benchmarks/tasks/http_retry_001.json --provider groq --model your-model --output-dir artifacts/groq
+
+Or use Mistral:
+
+    set MISTRAL_API_KEY=your-key
+    uv run codereviewops review --task benchmarks/tasks/http_retry_001.json --provider mistral --model your-model --output-dir artifacts/mistral
+
+Each live run makes exactly one HTTPS request to the selected provider. It does not
+retry, follow redirects, fall back to another provider, or substitute another model.
+Provider failures are reported with safe error categories without including keys or
+arbitrary response text.
+
+The optional live smoke test is skipped unless explicitly enabled and configured:
+
+    set CODEREVIEWOPS_RUN_LIVE=1
+    set CODEREVIEWOPS_LIVE_PROVIDER=groq
+    set CODEREVIEWOPS_LIVE_MODEL=your-model
+    uv run pytest -m live
+
 ## Development
 
     uv run ruff check .
     uv run mypy src
-    uv run pytest
+    uv run pytest -m "not live"
 
 ## Current scope and limitations
 
-This milestone intentionally has no live model provider, GitHub integration, repository
-tools, database, API, or dashboard. Replay output proves the evaluation boundary and
-workflow deterministically; it does not measure a production model yet.
+The project intentionally has no GitHub integration, repository tools, database, API,
+or dashboard. Replay output proves the evaluation boundary deterministically. Live
+inference measures a selected hosted model but remains a bounded, one-request workflow.
 
 Future milestones will add tool-using agents, MCP integrations, a larger benchmark
 suite, model comparisons, and a dashboard.

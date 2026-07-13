@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 
 from codereviewops.io import InputError, load_task
-from codereviewops.models import ReviewContext
+from codereviewops.models import ProviderResult, ReviewContext
 from codereviewops.providers import ProviderError, ReplayProvider
 from codereviewops.workflow import run_loaded_task
 
@@ -120,7 +120,15 @@ def test_provider_receives_only_review_context(tmp_path: Path, report_factory) -
     class SpyProvider:
         def review(self, context: ReviewContext):
             captured.append(context)
-            return report_factory([])
+            return ProviderResult(
+                report=report_factory([]),
+                requested_model=None,
+                response_model=None,
+                prompt_version=None,
+                structured_output_mode="replay",
+                latency_ms=0,
+                usage=None,
+            )
 
     _, artifact = run_loaded_task(loaded, SpyProvider())
     assert artifact.evaluation.task_success

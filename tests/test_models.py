@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import Any
+
 import pytest
 from pydantic import ValidationError
 
+from codereviewops.contracts import LIVE_STRUCTURED_OUTPUT_MODE, PROMPT_VERSION
 from codereviewops.models import (
     MAX_FINDINGS_PER_TASK,
     BenchmarkTask,
@@ -11,6 +16,7 @@ from codereviewops.models import (
     ExpectedFinding,
     Finding,
     OverallAssessment,
+    RunArtifact,
     Severity,
 )
 from codereviewops.models import (
@@ -142,3 +148,93 @@ def test_review_rejects_more_than_maximum_findings(
     findings = [finding_factory()] * (MAX_FINDINGS_PER_TASK + 1)
     with pytest.raises(ValidationError, match="too_long"):
         report_factory(findings)
+
+
+def test_legacy_run_artifact_fixture_remains_valid() -> None:
+    fixture = (Path(__file__).parent / "fixtures" / "artifacts" / "run_v1.json").read_text(
+        encoding="utf-8"
+    )
+    artifact = RunArtifact.model_validate_json(fixture)
+    assert artifact.schema_version == "1.0"
+    assert artifact.requested_model is None
+    assert artifact.structured_output_mode is None
+
+
+def _artifact_data() -> dict[str, Any]:
+    fixture = Path(__file__).parent / "fixtures" / "artifacts" / "run_v1.json"
+    return json.loads(fixture.read_text(encoding="utf-8"))
+
+
+def _live_artifact_data(**overrides: Any) -> dict[str, Any]:
+    data = _artifact_data()
+    data.update(
+        schema_version="1.1",
+        provider="groq",
+        requested_model="request/model-1",
+        response_model=None,
+        prompt_version=PROMPT_VERSION,
+        structured_output_mode=LIVE_STRUCTURED_OUTPUT_MODE,
+        latency_ms=1.25,
+        usage=None,
+    )
+    data.update(overrides)
+    return data
+
+
+def test_live_run_artifact_allows_missing_response_model() -> None:
+    artifact = RunArtifact.model_validate(_live_artifact_data())
+    assert artifact.provider == "groq"
+    assert artifact.response_model is None
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"provider": "unsupported"},
+        {"requested_model": "bad model"},
+        {"requested_model": "model\ncontrol"},
+        {"response_model": "bad model"},
+        {"response_model": "model\ncontrol"},
+        {"prompt_version": "review-v2"},
+        {"prompt_version": None},
+        {"structured_output_mode": "json_schema"},
+        {"latency_ms": -0.01},
+        {"latency_ms": float("nan")},
+    ],
+)
+def test_live_run_artifact_rejects_invalid_contract_fields(
+    overrides: dict[str, Any],
+) -> None:
+    with pytest.raises(ValidationError):
+        RunArtifact.model_validate(_live_artifact_data(**overrides))
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("requested_model", "model"),
+        ("response_model", "model"),
+        ("prompt_version", PROMPT_VERSION),
+        ("structured_output_mode", LIVE_STRUCTURED_OUTPUT_MODE),
+        ("latency_ms", 1),
+        ("usage", {"prompt_tokens": 1}),
+    ],
+)
+def test_replay_run_artifact_requires_exact_deterministic_metadata(
+    field: str,
+    value: Any,
+) -> None:
+    data = _artifact_data()
+    data.update(
+        schema_version="1.1",
+        provider="replay",
+        requested_model=None,
+        response_model=None,
+        prompt_version=None,
+        structured_output_mode="replay",
+        latency_ms=0,
+        usage=None,
+    )
+    data[field] = value
+    with pytest.raises(ValidationError):
+        RunArtifact.model_validate(data)

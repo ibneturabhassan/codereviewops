@@ -56,6 +56,13 @@ def test_cli_success_writes_valid_deterministic_json_and_markdown(tmp_path: Path
     artifact = RunArtifact.model_validate_json(run_text)
     assert artifact.evaluation.task_success
     assert artifact.task_id == "http_retry_001"
+    assert artifact.schema_version == "1.1"
+    assert artifact.provider == "replay"
+    assert artifact.requested_model is None
+    assert artifact.response_model is None
+    assert artifact.prompt_version is None
+    assert artifact.structured_output_mode == "replay"
+    assert artifact.latency_ms == 0
     assert "$" not in report_text
     for heading in (
         "## Metrics",
@@ -137,7 +144,7 @@ def test_cli_schema_invalid_replay_exits_two(tmp_path: Path) -> None:
     replay.write_text('{"schema_version": "1.0"}', encoding="utf-8")
     result = _invoke(task, tmp_path / "output")
     assert result.exit_code == 2
-    assert "invalid replay response" in result.output
+    assert "code=invalid_replay" in result.output
 
 
 def test_cli_rejects_non_replay_provider_with_exit_two(tmp_path: Path) -> None:
@@ -155,3 +162,95 @@ def test_cli_rejects_non_replay_provider_with_exit_two(tmp_path: Path) -> None:
     )
     assert result.exit_code == 2
     assert "unsupported provider" in result.output
+
+
+def test_cli_forbids_model_for_replay(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "review",
+            "--task",
+            str(BENCHMARK),
+            "--provider",
+            "replay",
+            "--model",
+            "unused",
+            "--output-dir",
+            str(tmp_path / "output"),
+        ],
+    )
+    assert result.exit_code == 2
+    assert "--model is forbidden" in result.output
+
+
+@pytest.mark.parametrize("provider", ["groq", "mistral"])
+def test_cli_requires_model_for_live_provider(tmp_path: Path, provider: str) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "review",
+            "--task",
+            str(BENCHMARK),
+            "--provider",
+            provider,
+            "--output-dir",
+            str(tmp_path / "output"),
+        ],
+    )
+    assert result.exit_code == 2
+    assert "--model is required" in result.output
+
+
+@pytest.mark.parametrize(
+    ("provider", "environment_key"),
+    [("groq", "GROQ_API_KEY"), ("mistral", "MISTRAL_API_KEY")],
+)
+def test_cli_missing_key_is_safe(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    provider: str,
+    environment_key: str,
+) -> None:
+    monkeypatch.delenv(environment_key, raising=False)
+    result = runner.invoke(
+        app,
+        [
+            "review",
+            "--task",
+            str(BENCHMARK),
+            "--provider",
+            provider,
+            "--model",
+            "valid-model",
+            "--output-dir",
+            str(tmp_path / "output"),
+        ],
+    )
+    assert result.exit_code == 2
+    assert "code=missing_api_key" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_cli_invalid_model_does_not_leak_key(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret = "cli-secret-value"
+    monkeypatch.setenv("GROQ_API_KEY", secret)
+    result = runner.invoke(
+        app,
+        [
+            "review",
+            "--task",
+            str(BENCHMARK),
+            "--provider",
+            "groq",
+            "--model",
+            "bad model",
+            "--output-dir",
+            str(tmp_path / "output"),
+        ],
+    )
+    assert result.exit_code == 2
+    assert "code=invalid_model" in result.output
+    assert secret not in result.output

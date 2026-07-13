@@ -13,6 +13,8 @@ pytest-cache-files-*/
 .coverage
 htmlcov/
 artifacts/
+!tests/fixtures/artifacts/
+!tests/fixtures/artifacts/run_v1.json
 dist/
 build/
 *.egg-info/
