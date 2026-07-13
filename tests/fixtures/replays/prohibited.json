@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "summary": "A prohibited unsupported claim is included.",
+  "overall_assessment": "needs_changes",
+  "findings": [
+    {
+      "title": "Retry policy includes client errors and a fourth attempt",
+      "severity": "high",
+      "category": "requirement_mismatch",
+      "file": "src/http_client.py",
+      "line_start": 6,
+      "line_end": 10,
+      "evidence": "All HTTP errors are retried, supposedly causing SQL   injection.",
+      "reasoning": "The retry mismatch is supported but the security claim is not.",
+      "recommendation": "Retry only 5xx responses for at most three attempts.",
+      "confidence": 0.99
+    }
+  ],
+  "tests_run": [],
+  "limitations": []
+}

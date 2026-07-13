@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "codereviewops"
+version = "0.1.0"
+description = "Deterministic reliability evaluation for code-review agents"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.12,<3",
+  "typer>=0.21,<1",
+]
+
+[project.scripts]
+codereviewops = "codereviewops.cli:app"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.19,<2",
+  "pytest>=9,<10",
+  "ruff>=0.14,<1",
+]
+
+[tool.hatch.build]
+exclude = [
+  "/.codex",
+  "/AGENTS.md",
+  "/01_CodeReviewOps_SPEC.md",
+  "/.uv-cache",
+  "/.venv",
+  "/artifacts",
+  "/dist",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/codereviewops"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["codereviewops"]

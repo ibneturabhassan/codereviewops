@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "summary": "The change broadens retries beyond the issue requirements and omits client-error coverage.",
+  "overall_assessment": "needs_changes",
+  "findings": [
+    {
+      "title": "Retry policy includes client errors and a fourth attempt",
+      "severity": "high",
+      "category": "requirement_mismatch",
+      "file": "src/http_client.py",
+      "line_start": 6,
+      "line_end": 10,
+      "evidence": "The loop uses range(4), and every response with status >= 400 reaches another iteration.",
+      "reasoning": "The issue limits retries to 5xx responses and three total attempts, so 4xx responses must return immediately.",
+      "recommendation": "Return 4xx responses immediately and cap the loop at three total attempts.",
+      "confidence": 0.99
+    },
+    {
+      "title": "No test protects the no-retry behavior for 4xx",
+      "severity": "medium",
+      "category": "missing_test",
+      "file": "tests/test_http_client.py",
+      "line_start": 1,
+      "line_end": 13,
+      "evidence": "The added test covers eventual recovery from 5xx but has no 4xx case.",
+      "reasoning": "Without a client-error test, the unintended 4xx retry behavior can regress unnoticed.",
+      "recommendation": "Add a 4xx response test asserting one transport call and immediate return.",
+      "confidence": 0.97
+    }
+  ],
+  "tests_run": [],
+  "limitations": [
+    "This deterministic replay does not execute the synthetic fixture."
+  ]
+}
