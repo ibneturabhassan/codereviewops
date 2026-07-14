@@ -7,11 +7,17 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+import codereviewops.cli as cli
+import codereviewops.tools as tool_module
+import codereviewops.workflow as workflow_module
 from codereviewops.cli import app
-from codereviewops.models import RunArtifact
+from codereviewops.models import RunArtifact, WorkflowState
+from codereviewops.models import TestStatus as ReviewTestStatus
+from codereviewops.tools import ToolError
 
 ROOT = Path(__file__).parents[1]
 BENCHMARK = ROOT / "benchmarks" / "tasks" / "http_retry_001.json"
+TOOL_BENCHMARK = ROOT / "benchmarks" / "tasks" / "python_tools_001.json"
 REPLAY_VARIANTS = ROOT / "tests" / "fixtures" / "replays"
 runner = CliRunner()
 
@@ -254,3 +260,88 @@ def test_cli_invalid_model_does_not_leak_key(
     assert result.exit_code == 2
     assert "code=invalid_model" in result.output
     assert secret not in result.output
+
+
+def test_tools_check_reports_ready_image(monkeypatch) -> None:
+    class ReadyRunner:
+        def check(self) -> str:
+            return "sha256:" + ("a" * 64)
+
+    monkeypatch.setattr(cli, "DockerTestRunner", ReadyRunner)
+    result = runner.invoke(app, ["tools-check"])
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "tools ready: sha256:" + ("a" * 64)
+
+
+def test_tools_check_reports_unavailable(monkeypatch) -> None:
+    class UnavailableRunner:
+        def check(self) -> str:
+            raise ToolError("docker_unavailable", "pinned local runner image is unavailable")
+
+    monkeypatch.setattr(cli, "DockerTestRunner", UnavailableRunner)
+    result = runner.invoke(app, ["tools-check"])
+    assert result.exit_code == 1
+    assert "tools unavailable" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_cli_tool_cleanup_failure_writes_safe_atomic_failed_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    snapshot_root = tmp_path / "system-snapshots"
+    snapshot_root.mkdir()
+    output = tmp_path / "output"
+    private_detail = f"private cleanup failure at {tmp_path}"
+    monkeypatch.setattr(tool_module.tempfile, "gettempdir", lambda: str(snapshot_root))
+    real_rmtree = tool_module.shutil.rmtree
+
+    def remove_then_fail(path: Path) -> None:
+        real_rmtree(path)
+        raise OSError(private_detail)
+
+    class PassingRunner:
+        requires_sealed_snapshot = True
+
+        def run(self, workspace: Path, profile: str) -> tool_module.TestExecution:
+            assert workspace.is_relative_to(snapshot_root)
+            return tool_module.TestExecution(ReviewTestStatus.PASSED, "tests passed")
+
+    monkeypatch.setattr(tool_module.shutil, "rmtree", remove_then_fail)
+    monkeypatch.setattr(workflow_module, "DockerTestRunner", PassingRunner)
+
+    first = _invoke(TOOL_BENCHMARK, output)
+    assert first.exit_code == 2, first.output
+    run_path = output / "run.json"
+    report_path = output / "report.md"
+    run_text = run_path.read_text(encoding="utf-8")
+    report_text = report_path.read_text(encoding="utf-8")
+    artifact = RunArtifact.model_validate_json(run_text)
+    assert artifact.schema_version == "1.2"
+    assert artifact.final_state == WorkflowState.FAILED
+    assert artifact.state_transitions[-1].to_state == WorkflowState.FAILED
+    assert artifact.failure_code == "cleanup_failed"
+    assert artifact.failure_message == "isolated workspace could not be removed"
+    assert artifact.tool_trace[-1].status.value == "failed"
+    assert artifact.tool_trace[-1].result.kind == "tool_failure"
+    assert artifact.tool_trace[-1].result.code == "cleanup_failed"
+    assert private_detail not in first.output
+    assert private_detail not in run_text
+    assert private_detail not in report_text
+    assert str(tmp_path) not in run_text
+    assert str(tmp_path) not in report_text
+    assert {path.name for path in output.iterdir()} == {"run.json", "report.md"}
+
+    run_path.write_text("private run sentinel", encoding="utf-8")
+    report_path.write_text("private report sentinel", encoding="utf-8")
+    refused = _invoke(TOOL_BENCHMARK, output)
+    assert refused.exit_code == 2
+    assert "--overwrite" in refused.output
+    assert run_path.read_text(encoding="utf-8") == "private run sentinel"
+    assert report_path.read_text(encoding="utf-8") == "private report sentinel"
+
+    overwritten = _invoke(TOOL_BENCHMARK, output, "--overwrite")
+    assert overwritten.exit_code == 2, overwritten.output
+    overwritten_artifact = RunArtifact.model_validate_json(run_path.read_text(encoding="utf-8"))
+    assert overwritten_artifact.failure_code == "cleanup_failed"
+    assert report_path.read_text(encoding="utf-8").startswith("# Review Report:")
+    assert {path.name for path in output.iterdir()} == {"run.json", "report.md"}

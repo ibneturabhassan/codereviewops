@@ -20,7 +20,7 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run mypy src
-      - run: uv run pytest -m "not live"
+      - run: uv run pytest -m "not live and not docker"
       - run: uv build
       - name: Evaluation smoke test
         run: >-
@@ -28,3 +28,27 @@ jobs:
           --task benchmarks/tasks/http_retry_001.json
           --provider replay
           --output-dir artifacts/smoke
+
+  docker-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+      - name: Build pinned tool runner
+        run: >-
+          docker build
+          --pull=false
+          --file runner/Dockerfile
+          --tag codereviewops/python-unittest:0.1.0
+          .
+      - name: Tool workflow replay smoke
+        run: >-
+          uv run codereviewops review
+          --task benchmarks/tasks/python_tools_001.json
+          --provider replay
+          --output-dir artifacts/tool-smoke
+      - run: uv run pytest -m docker

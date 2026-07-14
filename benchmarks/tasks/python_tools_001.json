@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.1",
+  "task_id": "python_tools_001",
+  "title": "Correct integer addition",
+  "issue_description": "The add function must return the sum of its two integer arguments.",
+  "diff_path": "fixtures/python_tools_001.diff",
+  "expected_findings": [
+    {
+      "category": "bug",
+      "file": "calculator.py",
+      "line_start": 5,
+      "line_end": 5,
+      "description": "The implementation subtracts instead of adding."
+    }
+  ],
+  "must_not_find": ["SQL injection"],
+  "difficulty": "low",
+  "tags": ["python", "tools", "unittest"],
+  "replay_response_path": "replays/python_tools_001.json",
+  "workspace_path": "workspaces/python_tools_001",
+  "tool_plan": {
+    "read_files": ["calculator.py", "tests/test_calculator.py"],
+    "searches": ["return left - right"],
+    "test_profile": "python-unittest-v1"
+  }
+}

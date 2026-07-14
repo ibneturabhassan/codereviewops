@@ -31,6 +31,7 @@ def render_markdown(task: BenchmarkTask, artifact: RunArtifact) -> str:
         f"- Structured output: {artifact.structured_output_mode or '-'}",
         f"- Latency: {artifact.latency_ms if artifact.latency_ms is not None else '-'} ms",
         ("- Usage: " + (artifact.usage.model_dump_json() if artifact.usage is not None else "-")),
+        f"- Final state: {artifact.final_state.value if artifact.final_state is not None else '-'}",
         f"- Assessment: **{review.overall_assessment.value}**",
         f"- Task success: **{str(evaluation.task_success).lower()}**",
         "",
@@ -102,11 +103,53 @@ def render_markdown(task: BenchmarkTask, artifact: RunArtifact) -> str:
     else:
         lines.append("- None reported")
 
+    lines.extend(["", "## Tool trace", ""])
+    if artifact.tool_trace:
+        for entry in artifact.tool_trace:
+            lines.append(
+                f"- {entry.trace_id} TOOL {entry.tool.value} **{entry.status.value}** "
+                f"({entry.latency_ms} ms): {entry.influence}"
+            )
+            lines.append(f"  - Arguments: {entry.arguments.model_dump_json()}")
+            provenance = [item.model_dump() for item in entry.provenance]
+            lines.append(f"  - Provenance: {json.dumps(provenance)}")
+            lines.append(f"  - Result: {entry.result.model_dump_json()}")
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Verification", ""])
+    if artifact.verification is not None:
+        lines.append(
+            f"- {artifact.verification.profile} **{artifact.verification.status.value}**: "
+            f"{json.dumps(artifact.verification.summary)}"
+        )
+        changed = [item.model_dump() for item in artifact.verification.changed_locations]
+        lines.append(f"- Changed locations: {json.dumps(changed)}")
+    else:
+        lines.append("- Not configured")
     lines.extend(["", "## Limitations", ""])
     if review.limitations:
         lines.extend(f"- {limitation}" for limitation in review.limitations)
     else:
         lines.append("- None reported")
+    lines.extend(["", "## Candidate verification", ""])
+    if artifact.candidate_verifications:
+        for record in artifact.candidate_verifications:
+            label = "accepted" if record.accepted else "rejected"
+            lines.append(
+                f"- Candidate [{record.candidate_index}] **{label}**: {record.code} "
+                f"({json.dumps(record.evidence_trace_ids)})"
+            )
+    else:
+        lines.append("- None")
+    if artifact.failure_code:
+        lines.extend(
+            [
+                "",
+                "## Workflow failure",
+                "",
+                f"- {artifact.failure_code}: {artifact.failure_message}",
+            ]
+        )
     return "\n".join(lines) + "\n"
 
 

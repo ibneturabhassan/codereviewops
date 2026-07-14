@@ -17,6 +17,7 @@ from codereviewops.contracts import (
     LIVE_STRUCTURED_OUTPUT_MODE,
     MODEL_PATTERN,
     PROMPT_VERSION,
+    TOOL_PROMPT_VERSION,
     is_valid_model_identifier,
 )
 from codereviewops.models import ProviderResult, ReviewContext, ReviewReport, Usage
@@ -448,7 +449,9 @@ class LiveProvider:
             report=report,
             requested_model=self.model,
             response_model=response_model,
-            prompt_version=PROMPT_VERSION,
+            prompt_version=TOOL_PROMPT_VERSION
+            if context.schema_version == "1.2"
+            else PROMPT_VERSION,
             structured_output_mode=LIVE_STRUCTURED_OUTPUT_MODE,
             latency_ms=latency_ms,
             usage=usage,

@@ -43,6 +43,7 @@ addopts = "-ra"
 testpaths = ["tests"]
 markers = [
   "live: opt-in test that makes one real provider request",
+  "docker: integration test for the pinned isolated tool runner",
 ]
 
 [tool.ruff]

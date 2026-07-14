@@ -5,7 +5,9 @@ agent finds expected problems in a pull request without inventing unsupported on
 Milestone 1 uses synthetic fixtures and a replay provider so evaluation is reproducible,
 auditable, and does not require API keys or network access. Milestone 2 adds direct,
 single-request Groq and Mistral inference for small opt-in evaluations; free-tier limits
-and model availability are controlled by those providers.
+and model availability are controlled by those providers. Milestone 3 adds a bounded,
+manifest-driven tool workflow for deterministic workspace reads, literal code searches,
+and an opt-in isolated Python unittest profile.
 
 ## What Milestone 1 does
 
@@ -41,8 +43,30 @@ files are restored and partial new files are removed. Because the result uses tw
 filenames, both files cannot become visible at the exact same filesystem instant;
 concurrent readers should honor the same lock.
 
-### Live inference
+### Bounded tools
 
+Tool-enabled benchmark schema 1.1 declares every allowed file read, literal search,
+and test profile up front. Workspace paths must remain beneath the benchmark directory;
+absolute paths, traversal, links, reparse points, special files, `.git`, binary content,
+and oversized workspaces are rejected. Tool traces and workflow transitions are recorded
+in schema 1.2 artifacts without exposing host paths.
+
+Build the pinned unittest runner and verify that it is available:
+
+    docker build --pull=false -f runner/Dockerfile -t codereviewops/python-unittest:0.1.0 .
+    uv run codereviewops tools-check
+
+Then run the deterministic tool benchmark:
+
+    uv run codereviewops review --task benchmarks/tasks/python_tools_001.json --provider replay --output-dir artifacts/python_tools_001
+
+The runner accepts only the fixed `python-unittest-v1` profile. It starts Docker with no
+network, no added capabilities, no new privileges, a read-only root filesystem and
+workspace mount, resource limits, a non-root user, and a 30-second deadline. CodeReviewOps
+never sends benchmark-controlled shell commands to the host or container, and it does not
+fall back to host execution when Docker is unavailable.
+
+### Live inference
 Live runs require an explicit model and the provider's API key. The CLI reads only
 `GROQ_API_KEY` or `MISTRAL_API_KEY`; do not commit keys or place them in benchmark
 files. For example, in Command Prompt:
@@ -71,13 +95,14 @@ The optional live smoke test is skipped unless explicitly enabled and configured
 
     uv run ruff check .
     uv run mypy src
-    uv run pytest -m "not live"
+    uv run pytest -m "not live and not docker"
 
 ## Current scope and limitations
 
-The project intentionally has no GitHub integration, repository tools, database, API,
-or dashboard. Replay output proves the evaluation boundary deterministically. Live
-inference measures a selected hosted model but remains a bounded, one-request workflow.
+The project intentionally has no GitHub integration, arbitrary shell tool, database,
+API, or dashboard. Replay output proves the evaluation boundary deterministically. Live
+inference measures a selected hosted model but remains a bounded, one-request workflow;
+tool context is gathered before that single request.
 
-Future milestones will add tool-using agents, MCP integrations, a larger benchmark
-suite, model comparisons, and a dashboard.
+Future milestones will add MCP integrations, a larger benchmark suite, model comparisons,
+and a dashboard.

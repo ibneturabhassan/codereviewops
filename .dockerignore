@@ -1,0 +1,8 @@
+**
+!runner/
+!runner/Dockerfile
+.git
+.codex
+AGENTS.md
+artifacts
+**/__pycache__

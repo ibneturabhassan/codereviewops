@@ -1,0 +1,7 @@
+diff --git a/calculator.py b/calculator.py
+index 7c8b980..d1f975b 100644
+--- a/calculator.py
++++ b/calculator.py
+@@ -5 +5 @@ def add(left: int, right: int) -> int:
+-    return left + right
++    return left - right

@@ -23,6 +23,8 @@ class LoadedTask:
     task: BenchmarkTask
     diff_path: Path
     replay_path: Path
+    benchmark_root: Path | None = None
+    workspace_path: Path | None = None
 
 
 def _read_json(path: Path) -> Any:
@@ -45,6 +47,20 @@ def _resolve_reference(base: Path, reference: str, label: str) -> Path:
     return candidate
 
 
+def _resolve_workspace(base: Path, reference: str) -> Path:
+    try:
+        base_resolved = base.resolve(strict=True)
+        lexical = base_resolved / reference
+        resolved = lexical.resolve(strict=True)
+    except OSError as exc:
+        raise InputError(f"workspace is missing or inaccessible: {reference}") from exc
+    if not resolved.is_relative_to(base_resolved):
+        raise InputError(f"workspace escapes the benchmark task directory: {reference}")
+    if not lexical.is_dir():
+        raise InputError(f"workspace is not a directory: {reference}")
+    return lexical.absolute()
+
+
 def load_task(manifest_path: Path) -> LoadedTask:
     """Load a task and confine both referenced files beneath its directory."""
 
@@ -63,4 +79,10 @@ def load_task(manifest_path: Path) -> LoadedTask:
         task=task,
         diff_path=_resolve_reference(base, task.diff_path, "diff"),
         replay_path=_resolve_reference(base, task.replay_response_path, "replay response"),
+        workspace_path=(
+            _resolve_workspace(base, task.workspace_path)
+            if task.workspace_path is not None
+            else None
+        ),
+        benchmark_root=base.resolve(strict=True),
     )

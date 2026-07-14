@@ -8,6 +8,9 @@ from typing import Annotated
 import typer
 
 from codereviewops.artifacts import write_artifacts
+from codereviewops.docker_runner import DockerTestRunner
+from codereviewops.models import WorkflowState
+from codereviewops.tools import ToolError
 from codereviewops.workflow import run_task
 
 app = typer.Typer(
@@ -19,6 +22,18 @@ app = typer.Typer(
 @app.callback()
 def main() -> None:
     """Run CodeReviewOps commands."""
+
+
+@app.command("tools-check")
+def tools_check() -> None:
+    """Check whether the immutable Docker tool runner is ready."""
+
+    try:
+        image_id = DockerTestRunner().check()
+    except ToolError as exc:
+        typer.echo(f"tools unavailable: {exc}", err=True)
+        raise typer.Exit(code=1) from None
+    typer.echo(f"tools ready: {image_id}")
 
 
 @app.command()
@@ -57,6 +72,10 @@ def review(
 
     typer.echo(f"wrote {run_path}")
     typer.echo(f"wrote {report_path}")
+    if artifact.final_state == WorkflowState.FAILED:
+        typer.echo(f"workflow failed: {artifact.failure_code}", err=True)
+        raise typer.Exit(code=2)
+
     if not artifact.evaluation.task_success:
         raise typer.Exit(code=1)
 
