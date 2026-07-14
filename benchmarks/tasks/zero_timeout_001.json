@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/zero_timeout_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "category": "bug",
+      "description": "Treats an explicit zero timeout as missing and unbounded.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "high"
+    }
+  ],
+  "issue_description": "An explicit zero timeout must remain zero rather than becoming an unbounded timeout.",
+  "must_not_find": [
+    "race condition"
+  ],
+  "replay_response_path": "replays/zero_timeout_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "zero_timeout_001",
+  "title": "Zero Timeout 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return timeout or None"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/zero_timeout_001"
+}

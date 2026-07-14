@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "task_id": "http_retry_001",
+  "title": "Restrict HTTP retries to server failures",
+  "issue_description": "Retry only HTTP 5xx responses and make at most three total attempts. Client errors (4xx) must be returned immediately and covered by tests.",
+  "diff_path": "fixtures/http_retry_001.diff",
+  "expected_findings": [
+    {
+      "category": "requirement_mismatch",
+      "file": "src/http_client.py",
+      "line_start": 6,
+      "line_end": 10,
+      "description": "The retry loop retries every HTTP error, including 4xx responses, and permits four total attempts."
+    },
+    {
+      "category": "missing_test",
+      "file": "tests/test_http_client.py",
+      "line_start": 1,
+      "line_end": 13,
+      "description": "The tests do not verify that a 4xx response is returned without retrying."
+    }
+  ],
+  "must_not_find": [
+    "SQL injection"
+  ],
+  "difficulty": "low",
+  "tags": [
+    "http",
+    "retry",
+    "python"
+  ],
+  "replay_response_path": "replays/http_retry_001.json"
+}

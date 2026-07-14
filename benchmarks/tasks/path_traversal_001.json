@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/path_traversal_001.diff",
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "category": "security",
+      "description": "Uses a lexical prefix without resolved containment.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "critical"
+    }
+  ],
+  "issue_description": "Resolved candidate paths must remain contained beneath the resolved workspace root.",
+  "must_not_find": [
+    "shell injection"
+  ],
+  "replay_response_path": "replays/path_traversal_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "security"
+  ],
+  "task_id": "path_traversal_001",
+  "title": "Path Traversal 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return str(candidate).startswith(str(root))"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/path_traversal_001"
+}

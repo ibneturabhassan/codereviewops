@@ -1,0 +1,31 @@
+{
+  "difficulty": "low",
+  "expected_findings": [],
+  "expected_test_status": null,
+  "issue_description": "Retry only eligible failures within the exact configured budget.",
+  "must_not_find": [
+    "4xx retry",
+    "off-by-one"
+  ],
+  "primary_category": "negative",
+  "replay_assessment": "pass",
+  "replay_limitations": [],
+  "replay_summary": "The replay finds no actionable issue.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "negative"
+  ],
+  "task_id": "clean_retry_001",
+  "title": "Clean Retry 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "result = value"
+    ],
+    "test_profile": null
+  }
+}

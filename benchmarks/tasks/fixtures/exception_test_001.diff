@@ -1,0 +1,9 @@
+diff --git a/tests/test_solution.py b/tests/test_solution.py
+--- /dev/null
++++ b/tests/test_solution.py
+@@ -0,0 +1,5 @@
++# ruff: noqa
++from solution import lookup
++
++def test_normal_case():
++    assert lookup({"key": 1}, "key") == 1

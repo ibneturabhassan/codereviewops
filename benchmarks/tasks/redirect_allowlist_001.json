@@ -1,0 +1,46 @@
+{
+  "diff_path": "fixtures/redirect_allowlist_001.diff",
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "category": "security",
+      "description": "Suffix matching permits an attacker-controlled hostname.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "critical"
+    },
+    {
+      "category": "missing_test",
+      "description": "No hostile-hostname bypass regression is present.",
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "high"
+    }
+  ],
+  "issue_description": "Redirects are allowed only when the normalized hostname is exactly in the allowlist.",
+  "must_not_find": [
+    "SQL injection"
+  ],
+  "replay_response_path": "replays/redirect_allowlist_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "security"
+  ],
+  "task_id": "redirect_allowlist_001",
+  "title": "Redirect Allowlist 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "return host.endswith(allowed)"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/redirect_allowlist_001"
+}

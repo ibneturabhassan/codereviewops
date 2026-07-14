@@ -1,0 +1,31 @@
+{
+  "difficulty": "high",
+  "expected_findings": [],
+  "expected_test_status": null,
+  "issue_description": "Compare security-sensitive values using the documented constant-time helper.",
+  "must_not_find": [
+    "weak randomness",
+    "timing attack"
+  ],
+  "primary_category": "negative",
+  "replay_assessment": "pass",
+  "replay_limitations": [],
+  "replay_summary": "The replay finds no actionable issue.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "negative"
+  ],
+  "task_id": "clean_security_001",
+  "title": "Clean Security 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "result = value"
+    ],
+    "test_profile": null
+  }
+}

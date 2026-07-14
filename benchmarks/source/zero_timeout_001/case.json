@@ -1,0 +1,43 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    return timeout or None",
+      "category": "bug",
+      "confidence": 0.99,
+      "description": "Treats an explicit zero timeout as missing and unbounded.",
+      "evidence": "The added line is return timeout or None.",
+      "file": "solution.py",
+      "reasoning": "Treats an explicit zero timeout as missing and unbounded.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Treats an explicit zero timeout as missing and unbounded."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "An explicit zero timeout must remain zero rather than becoming an unbounded timeout.",
+  "must_not_find": [
+    "race condition"
+  ],
+  "primary_category": "bug",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "zero_timeout_001",
+  "title": "Zero Timeout 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return timeout or None"
+    ],
+    "test_profile": null
+  }
+}

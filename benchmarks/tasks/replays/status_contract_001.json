@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "category": "requirement_mismatch",
+      "confidence": 0.99,
+      "evidence": "The added line is return status in {200, 201, 202}.",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "reasoning": "Accepts an undocumented status outside the fixed allowlist.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Accepts an undocumented status outside the fixed allowlist."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

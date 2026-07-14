@@ -1,0 +1,17 @@
+diff --git a/solution.py b/solution.py
+--- a/solution.py
++++ b/solution.py
+@@ -1,3 +1,3 @@
+ # ruff: noqa
+ def review(value=None):
+-    return value
++    return host.endswith(allowed)
+diff --git a/tests/test_solution.py b/tests/test_solution.py
+--- /dev/null
++++ b/tests/test_solution.py
+@@ -0,0 +1,5 @@
++# ruff: noqa
++from solution import allowed_host
++
++def test_normal_case():
++    assert allowed_host("service.example", "example")

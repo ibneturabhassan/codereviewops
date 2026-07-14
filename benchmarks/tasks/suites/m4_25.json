@@ -1,0 +1,183 @@
+{
+  "expected_task_count": 25,
+  "schema_version": "1.0",
+  "suite_id": "m4_25",
+  "suite_version": "1.0.0",
+  "tasks": [
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "requirement_mismatch",
+      "task_id": "http_retry_001",
+      "task_path": "http_retry_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "bug",
+      "task_id": "python_tools_001",
+      "task_path": "python_tools_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "bug",
+      "task_id": "pagination_boundary_001",
+      "task_path": "pagination_boundary_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "bug",
+      "task_id": "nullable_header_001",
+      "task_path": "nullable_header_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": false,
+      "primary_category": "bug",
+      "task_id": "timezone_rollover_001",
+      "task_path": "timezone_rollover_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "requirement_mismatch",
+      "task_id": "status_contract_001",
+      "task_path": "status_contract_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "requirement_mismatch",
+      "task_id": "stable_order_001",
+      "task_path": "stable_order_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": false,
+      "primary_category": "requirement_mismatch",
+      "task_id": "error_shape_001",
+      "task_path": "error_shape_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "missing_test",
+      "task_id": "boundary_test_001",
+      "task_path": "boundary_test_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "missing_test",
+      "task_id": "exception_test_001",
+      "task_path": "exception_test_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "missing_test",
+      "task_id": "retry_budget_test_001",
+      "task_path": "retry_budget_test_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": false,
+      "primary_category": "security",
+      "task_id": "redirect_allowlist_001",
+      "task_path": "redirect_allowlist_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": false,
+      "primary_category": "security",
+      "task_id": "path_traversal_001",
+      "task_path": "path_traversal_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "security",
+      "task_id": "token_redaction_001",
+      "task_path": "token_redaction_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "performance",
+      "task_id": "repeated_regex_001",
+      "task_path": "repeated_regex_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": false,
+      "primary_category": "performance",
+      "task_id": "quadratic_membership_001",
+      "task_path": "quadratic_membership_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "maintainability",
+      "task_id": "swallowed_exception_001",
+      "task_path": "swallowed_exception_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": false,
+      "primary_category": "maintainability",
+      "task_id": "duplicated_policy_001",
+      "task_path": "duplicated_policy_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": false,
+      "primary_category": "maintainability",
+      "task_id": "misleading_default_001",
+      "task_path": "misleading_default_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": false,
+      "primary_category": "bug",
+      "task_id": "zero_timeout_001",
+      "task_path": "zero_timeout_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": true,
+      "primary_category": "negative",
+      "task_id": "clean_parser_001",
+      "task_path": "clean_parser_001.json"
+    },
+    {
+      "difficulty": "low",
+      "negative": true,
+      "primary_category": "negative",
+      "task_id": "clean_retry_001",
+      "task_path": "clean_retry_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": true,
+      "primary_category": "negative",
+      "task_id": "clean_validation_001",
+      "task_path": "clean_validation_001.json"
+    },
+    {
+      "difficulty": "medium",
+      "negative": true,
+      "primary_category": "negative",
+      "task_id": "clean_cache_001",
+      "task_path": "clean_cache_001.json"
+    },
+    {
+      "difficulty": "high",
+      "negative": true,
+      "primary_category": "negative",
+      "task_id": "clean_security_001",
+      "task_path": "clean_security_001.json"
+    }
+  ]
+}

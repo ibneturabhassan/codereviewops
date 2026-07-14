@@ -1,0 +1,43 @@
+{
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "anchor": "    return status in {200, 201, 202}",
+      "category": "requirement_mismatch",
+      "confidence": 0.99,
+      "description": "Accepts an undocumented status outside the fixed allowlist.",
+      "evidence": "The added line is return status in {200, 201, 202}.",
+      "file": "solution.py",
+      "reasoning": "Accepts an undocumented status outside the fixed allowlist.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Accepts an undocumented status outside the fixed allowlist."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Accept only the documented fixed status allowlist and reject every other status.",
+  "must_not_find": [
+    "authorization bypass"
+  ],
+  "primary_category": "requirement_mismatch",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "requirement_mismatch"
+  ],
+  "task_id": "status_contract_001",
+  "title": "Status Contract 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return status in {200, 201, 202}"
+    ],
+    "test_profile": null
+  }
+}

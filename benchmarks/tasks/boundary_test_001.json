@@ -1,0 +1,38 @@
+{
+  "diff_path": "fixtures/boundary_test_001.diff",
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "category": "missing_test",
+      "description": "Leaves empty and edge bounds untested.",
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "low"
+    }
+  ],
+  "issue_description": "Inclusive bound checks are correct; tests must cover empty and exact-edge inputs.",
+  "must_not_find": [
+    "implementation off-by-one"
+  ],
+  "replay_response_path": "replays/boundary_test_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "missing_test"
+  ],
+  "task_id": "boundary_test_001",
+  "title": "Boundary Test 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "assert contains(2, 1, 3)"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/boundary_test_001"
+}

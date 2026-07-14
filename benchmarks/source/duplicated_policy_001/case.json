@@ -1,0 +1,43 @@
+{
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "anchor": "    return value.strip().casefold()",
+      "category": "maintainability",
+      "confidence": 0.99,
+      "description": "Duplicates normalization policy that can drift.",
+      "evidence": "The added line is return value.strip().casefold().",
+      "file": "solution.py",
+      "reasoning": "Duplicates normalization policy that can drift.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "low",
+      "title": "Duplicates normalization policy that can drift."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Normalization must use the shared policy implementation so behavior cannot drift.",
+  "must_not_find": [
+    "incorrect output"
+  ],
+  "primary_category": "maintainability",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "maintainability"
+  ],
+  "task_id": "duplicated_policy_001",
+  "title": "Duplicated Policy 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return value.strip().casefold()"
+    ],
+    "test_profile": null
+  }
+}

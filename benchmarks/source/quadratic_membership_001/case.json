@@ -1,0 +1,43 @@
+{
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "anchor": "            if item in allowed_list: result.append(item)",
+      "category": "performance",
+      "confidence": 0.99,
+      "description": "Uses list membership inside a large nested iteration.",
+      "evidence": "The added line is if item in allowed_list: result.append(item).",
+      "file": "solution.py",
+      "reasoning": "Uses list membership inside a large nested iteration.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Uses list membership inside a large nested iteration."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Large membership checks must use a constant-time lookup structure.",
+  "must_not_find": [
+    "memory leak"
+  ],
+  "primary_category": "performance",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "performance"
+  ],
+  "task_id": "quadratic_membership_001",
+  "title": "Quadratic Membership 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "if item in allowed_list: result.append(item)"
+    ],
+    "test_profile": null
+  }
+}

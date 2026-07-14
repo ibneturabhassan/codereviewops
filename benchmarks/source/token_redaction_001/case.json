@@ -1,0 +1,43 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    log.append(authorization)",
+      "category": "security",
+      "confidence": 0.99,
+      "description": "Logs the bearer value before redaction.",
+      "evidence": "The added line is log.append(authorization).",
+      "file": "solution.py",
+      "reasoning": "Logs the bearer value before redaction.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Logs the bearer value before redaction."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Authorization values must be redacted before any logging occurs.",
+  "must_not_find": [
+    "weak encryption"
+  ],
+  "primary_category": "security",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "security"
+  ],
+  "task_id": "token_redaction_001",
+  "title": "Token Redaction 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "log.append(authorization)"
+    ],
+    "test_profile": null
+  }
+}

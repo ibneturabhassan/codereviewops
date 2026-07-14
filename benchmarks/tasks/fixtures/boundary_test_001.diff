@@ -1,0 +1,9 @@
+diff --git a/tests/test_solution.py b/tests/test_solution.py
+--- /dev/null
++++ b/tests/test_solution.py
+@@ -0,0 +1,5 @@
++# ruff: noqa
++from solution import contains
++
++def test_normal_case():
++    assert contains(2, 1, 3)

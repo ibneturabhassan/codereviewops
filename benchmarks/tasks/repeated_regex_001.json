@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/repeated_regex_001.diff",
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "category": "performance",
+      "description": "Compiles an invariant regular expression inside the record loop.",
+      "file": "solution.py",
+      "line_end": 7,
+      "line_start": 7,
+      "severity": "medium"
+    }
+  ],
+  "issue_description": "Compile an invariant expression once and reuse it for every record.",
+  "must_not_find": [
+    "ReDoS"
+  ],
+  "replay_response_path": "replays/repeated_regex_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "performance"
+  ],
+  "task_id": "repeated_regex_001",
+  "title": "Repeated Regex 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "pattern = re.compile(expression)"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/repeated_regex_001"
+}

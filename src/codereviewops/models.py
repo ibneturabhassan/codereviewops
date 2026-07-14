@@ -41,7 +41,7 @@ from codereviewops.mcp_manifest import (
 from codereviewops.tool_contracts import ToolErrorCode
 
 SchemaVersion = Literal["1.0"]
-BenchmarkSchemaVersion = Literal["1.0", "1.1"]
+BenchmarkSchemaVersion = Literal["1.0", "1.1", "1.2"]
 ReportSchemaVersion = Literal["1.0", "1.2"]
 Confidence = Annotated[float, Field(ge=0.0, le=1.0)]
 PositiveLine = Annotated[int, Field(ge=1)]
@@ -161,6 +161,7 @@ class ChangedLocation(LineRangeModel):
 
 
 class ExpectedFinding(LineRangeModel):
+    severity: Severity | None = None
     category: Category
     file: str
     description: str
@@ -230,6 +231,22 @@ class BenchmarkTask(StrictModel):
             raise ValueError("workspace_path and tool_plan must be configured together")
         if self.schema_version == "1.1" and self.workspace_path is None:
             raise ValueError("schema 1.1 tasks require workspace_path and tool_plan")
+        if self.schema_version == "1.2" and self.workspace_path is None:
+            raise ValueError("schema 1.2 tasks require workspace_path and tool_plan")
+        if self.schema_version in {"1.0", "1.1"} and any(
+            finding.severity is not None for finding in self.expected_findings
+        ):
+            raise ValueError("schema 1.0 and 1.1 findings cannot declare severity")
+        if self.schema_version == "1.2":
+            if any(finding.severity is None for finding in self.expected_findings):
+                raise ValueError("schema 1.2 findings require severity")
+            assert self.tool_plan is not None
+            if not (
+                self.tool_plan.read_files
+                or self.tool_plan.searches
+                or self.tool_plan.test_profile is not None
+            ):
+                raise ValueError("schema 1.2 tasks require a non-empty tool plan")
         return self
 
 

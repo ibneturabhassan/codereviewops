@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/quadratic_membership_001.diff",
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "category": "performance",
+      "description": "Uses list membership inside a large nested iteration.",
+      "file": "solution.py",
+      "line_end": 6,
+      "line_start": 6,
+      "severity": "high"
+    }
+  ],
+  "issue_description": "Large membership checks must use a constant-time lookup structure.",
+  "must_not_find": [
+    "memory leak"
+  ],
+  "replay_response_path": "replays/quadratic_membership_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "performance"
+  ],
+  "task_id": "quadratic_membership_001",
+  "title": "Quadratic Membership 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "if item in allowed_list: result.append(item)"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/quadratic_membership_001"
+}

@@ -17,7 +17,7 @@ from codereviewops.process_control import ProcessTreeController
 from codereviewops.tool_contracts import ToolError
 
 ROOT = Path(__file__).parents[1]
-BENCHMARK_ROOT = ROOT / "benchmarks" / "tasks"
+BENCHMARK_ROOT = ROOT / "tests" / "fixtures" / "legacy_benchmarks"
 WORKSPACE_ROOT = BENCHMARK_ROOT / "workspaces" / "python_tools_001"
 
 

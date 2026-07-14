@@ -1,0 +1,56 @@
+{
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "anchor": "        if status >= 400: continue",
+      "category": "requirement_mismatch",
+      "confidence": 0.99,
+      "description": "Retries client errors and permits an extra attempt.",
+      "evidence": "The added line is if status >= 400: continue.",
+      "file": "solution.py",
+      "reasoning": "Retries client errors and permits an extra attempt.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Retries client errors and permits an extra attempt."
+    },
+    {
+      "anchor": "    assert request([500, 200]) == 200",
+      "category": "missing_test",
+      "confidence": 0.99,
+      "description": "No immediate-return client-error regression is present.",
+      "evidence": "The added line is assert request([500, 200]) == 200.",
+      "file": "tests/test_solution.py",
+      "reasoning": "No immediate-return client-error regression is present.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "No immediate-return client-error regression is present."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Retry only HTTP 5xx responses, stop after three total attempts, and return 4xx responses immediately.",
+  "must_not_find": [
+    "SSRF"
+  ],
+  "primary_category": "requirement_mismatch",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "requirement_mismatch"
+  ],
+  "task_id": "http_retry_001",
+  "title": "Http Retry 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "if status >= 400: continue"
+    ],
+    "test_profile": null
+  }
+}

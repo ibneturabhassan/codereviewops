@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/misleading_default_001.diff",
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "category": "maintainability",
+      "description": "The public default silently weakens documented strict validation.",
+      "file": "solution.py",
+      "line_end": 2,
+      "line_start": 2,
+      "severity": "high"
+    }
+  ],
+  "issue_description": "Public validation defaults must enforce the documented strict behavior.",
+  "must_not_find": [
+    "data race"
+  ],
+  "replay_response_path": "replays/misleading_default_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "maintainability"
+  ],
+  "task_id": "misleading_default_001",
+  "title": "Misleading Default 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "def validate(value, strict=False):"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/misleading_default_001"
+}

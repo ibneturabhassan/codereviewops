@@ -1,0 +1,45 @@
+{
+  "diff_path": "fixtures/swallowed_exception_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "category": "maintainability",
+      "description": "A broad catch hides malformed state.",
+      "file": "solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "medium"
+    },
+    {
+      "category": "bug",
+      "description": "Returns an observable wrong fallback for malformed input.",
+      "file": "solution.py",
+      "line_end": 4,
+      "line_start": 4,
+      "severity": "medium"
+    }
+  ],
+  "issue_description": "Malformed payloads must surface the documented failure instead of a fallback.",
+  "must_not_find": [
+    "security vulnerability"
+  ],
+  "replay_response_path": "replays/swallowed_exception_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "maintainability"
+  ],
+  "task_id": "swallowed_exception_001",
+  "title": "Swallowed Exception 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "except Exception: return None"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/swallowed_exception_001"
+}

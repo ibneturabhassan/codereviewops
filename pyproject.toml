@@ -49,11 +49,16 @@ markers = [
   "docker: integration test for the pinned isolated tool runner",
   "mcp: local MCP stdio integration tests",
 ]
+norecursedirs = ["tests/fixtures/legacy_benchmarks"]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-
+exclude = [
+  "benchmarks/source/*/before",
+  "benchmarks/source/*/after",
+  "tests/fixtures/legacy_benchmarks",
+]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 

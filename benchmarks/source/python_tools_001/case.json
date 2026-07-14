@@ -1,0 +1,44 @@
+{
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "anchor": "    return left - right",
+      "category": "bug",
+      "confidence": 0.99,
+      "description": "Subtracts instead of adding.",
+      "evidence": "The added line is return left - right.",
+      "file": "calculator.py",
+      "reasoning": "Subtracts instead of adding.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Subtracts instead of adding."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "The add function must return the sum of its two integer arguments.",
+  "must_not_find": [
+    "integer overflow"
+  ],
+  "primary_category": "bug",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "python_tools_001",
+  "title": "Python Tools 001",
+  "tool_plan": {
+    "read_files": [
+      "calculator.py",
+      "tests/test_calculator.py"
+    ],
+    "searches": [
+      "return left - right"
+    ],
+    "test_profile": null
+  }
+}

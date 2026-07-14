@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "category": "requirement_mismatch",
+      "confidence": 0.99,
+      "evidence": "The added line is return {\"message\": message, \"failed\": True}.",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "reasoning": "Returns a nonstandard error object.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Returns a nonstandard error object."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

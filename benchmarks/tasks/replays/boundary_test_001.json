@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "category": "missing_test",
+      "confidence": 0.99,
+      "evidence": "The added line is assert contains(2, 1, 3).",
+      "evidence_trace_ids": [
+        "tool-002"
+      ],
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "reasoning": "Leaves empty and edge bounds untested.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "low",
+      "title": "Leaves empty and edge bounds untested."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

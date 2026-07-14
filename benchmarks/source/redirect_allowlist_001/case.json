@@ -1,0 +1,56 @@
+{
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "anchor": "    return host.endswith(allowed)",
+      "category": "security",
+      "confidence": 0.99,
+      "description": "Suffix matching permits an attacker-controlled hostname.",
+      "evidence": "The added line is return host.endswith(allowed).",
+      "file": "solution.py",
+      "reasoning": "Suffix matching permits an attacker-controlled hostname.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "critical",
+      "title": "Suffix matching permits an attacker-controlled hostname."
+    },
+    {
+      "anchor": "    assert allowed_host(\"service.example\", \"example\")",
+      "category": "missing_test",
+      "confidence": 0.99,
+      "description": "No hostile-hostname bypass regression is present.",
+      "evidence": "The added line is assert allowed_host(\"service.example\", \"example\").",
+      "file": "tests/test_solution.py",
+      "reasoning": "No hostile-hostname bypass regression is present.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "No hostile-hostname bypass regression is present."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Redirects are allowed only when the normalized hostname is exactly in the allowlist.",
+  "must_not_find": [
+    "SQL injection"
+  ],
+  "primary_category": "security",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "security"
+  ],
+  "task_id": "redirect_allowlist_001",
+  "title": "Redirect Allowlist 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "return host.endswith(allowed)"
+    ],
+    "test_profile": null
+  }
+}

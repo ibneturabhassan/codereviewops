@@ -1,0 +1,38 @@
+{
+  "diff_path": "fixtures/retry_budget_test_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "category": "missing_test",
+      "description": "Leaves correct exhaustion behavior untested.",
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "medium"
+    }
+  ],
+  "issue_description": "Retry exhaustion is correct; tests must cover a budget exhausted without success.",
+  "must_not_find": [
+    "infinite retry"
+  ],
+  "replay_response_path": "replays/retry_budget_test_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "missing_test"
+  ],
+  "task_id": "retry_budget_test_001",
+  "title": "Retry Budget Test 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "assert retry([False, True], 2)"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/retry_budget_test_001"
+}

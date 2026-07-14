@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/status_contract_001.diff",
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "category": "requirement_mismatch",
+      "description": "Accepts an undocumented status outside the fixed allowlist.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "medium"
+    }
+  ],
+  "issue_description": "Accept only the documented fixed status allowlist and reject every other status.",
+  "must_not_find": [
+    "authorization bypass"
+  ],
+  "replay_response_path": "replays/status_contract_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "requirement_mismatch"
+  ],
+  "task_id": "status_contract_001",
+  "title": "Status Contract 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return status in {200, 201, 202}"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/status_contract_001"
+}

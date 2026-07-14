@@ -1,0 +1,38 @@
+{
+  "diff_path": "fixtures/exception_test_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "category": "missing_test",
+      "description": "Leaves the correct KeyError path untested.",
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "medium"
+    }
+  ],
+  "issue_description": "Mapping lookup is correct; tests must cover the missing-key exception contract.",
+  "must_not_find": [
+    "swallowed exception"
+  ],
+  "replay_response_path": "replays/exception_test_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "missing_test"
+  ],
+  "task_id": "exception_test_001",
+  "title": "Exception Test 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "assert lookup({\"key\": 1}, \"key\") == 1"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/exception_test_001"
+}

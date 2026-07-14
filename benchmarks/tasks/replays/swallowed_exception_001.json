@@ -1,0 +1,39 @@
+{
+  "findings": [
+    {
+      "category": "maintainability",
+      "confidence": 0.99,
+      "evidence": "The added line is except Exception: return None.",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
+      "file": "solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "reasoning": "A broad catch hides malformed state.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "A broad catch hides malformed state."
+    },
+    {
+      "category": "bug",
+      "confidence": 0.99,
+      "evidence": "The added line is return payload[\"missing\"].",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
+      "file": "solution.py",
+      "line_end": 4,
+      "line_start": 4,
+      "reasoning": "Returns an observable wrong fallback for malformed input.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Returns an observable wrong fallback for malformed input."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

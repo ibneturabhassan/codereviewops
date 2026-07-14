@@ -1,0 +1,29 @@
+{
+  "diff_path": "fixtures/clean_validation_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [],
+  "issue_description": "Validate identifiers against the complete documented grammar.",
+  "must_not_find": [
+    "regex bypass",
+    "SQL injection"
+  ],
+  "replay_response_path": "replays/clean_validation_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "negative"
+  ],
+  "task_id": "clean_validation_001",
+  "title": "Clean Validation 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "result = value"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/clean_validation_001"
+}

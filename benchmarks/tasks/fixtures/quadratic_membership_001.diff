@@ -1,0 +1,13 @@
+diff --git a/solution.py b/solution.py
+--- a/solution.py
++++ b/solution.py
+@@ -1,3 +1,7 @@
+ # ruff: noqa
+-def review(value=None):
+-    return value
++def review(groups, allowed_list):
++    result = []
++    for group in groups:
++        for item in group:
++            if item in allowed_list: result.append(item)
++    return result

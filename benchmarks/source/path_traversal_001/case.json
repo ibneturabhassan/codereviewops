@@ -1,0 +1,43 @@
+{
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "anchor": "    return str(candidate).startswith(str(root))",
+      "category": "security",
+      "confidence": 0.99,
+      "description": "Uses a lexical prefix without resolved containment.",
+      "evidence": "The added line is return str(candidate).startswith(str(root)).",
+      "file": "solution.py",
+      "reasoning": "Uses a lexical prefix without resolved containment.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "critical",
+      "title": "Uses a lexical prefix without resolved containment."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Resolved candidate paths must remain contained beneath the resolved workspace root.",
+  "must_not_find": [
+    "shell injection"
+  ],
+  "primary_category": "security",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "security"
+  ],
+  "task_id": "path_traversal_001",
+  "title": "Path Traversal 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return str(candidate).startswith(str(root))"
+    ],
+    "test_profile": null
+  }
+}

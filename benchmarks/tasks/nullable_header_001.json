@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/nullable_header_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "category": "bug",
+      "description": "Calls strip on an optional header.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "medium"
+    }
+  ],
+  "issue_description": "An absent optional header must be handled without raising and a present header must be normalized.",
+  "must_not_find": [
+    "header injection"
+  ],
+  "replay_response_path": "replays/nullable_header_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "nullable_header_001",
+  "title": "Nullable Header 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return header.strip()"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/nullable_header_001"
+}

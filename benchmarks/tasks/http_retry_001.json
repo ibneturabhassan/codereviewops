@@ -1,33 +1,46 @@
 {
-  "schema_version": "1.0",
-  "task_id": "http_retry_001",
-  "title": "Restrict HTTP retries to server failures",
-  "issue_description": "Retry only HTTP 5xx responses and make at most three total attempts. Client errors (4xx) must be returned immediately and covered by tests.",
   "diff_path": "fixtures/http_retry_001.diff",
+  "difficulty": "low",
   "expected_findings": [
     {
       "category": "requirement_mismatch",
-      "file": "src/http_client.py",
-      "line_start": 6,
-      "line_end": 10,
-      "description": "The retry loop retries every HTTP error, including 4xx responses, and permits four total attempts."
+      "description": "Retries client errors and permits an extra attempt.",
+      "file": "solution.py",
+      "line_end": 4,
+      "line_start": 4,
+      "severity": "high"
     },
     {
       "category": "missing_test",
-      "file": "tests/test_http_client.py",
-      "line_start": 1,
-      "line_end": 13,
-      "description": "The tests do not verify that a 4xx response is returned without retrying."
+      "description": "No immediate-return client-error regression is present.",
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "medium"
     }
   ],
+  "issue_description": "Retry only HTTP 5xx responses, stop after three total attempts, and return 4xx responses immediately.",
   "must_not_find": [
-    "SQL injection"
+    "SSRF"
   ],
-  "difficulty": "low",
+  "replay_response_path": "replays/http_retry_001.json",
+  "schema_version": "1.2",
   "tags": [
-    "http",
-    "retry",
-    "python"
+    "python",
+    "synthetic",
+    "requirement_mismatch"
   ],
-  "replay_response_path": "replays/http_retry_001.json"
+  "task_id": "http_retry_001",
+  "title": "Http Retry 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "if status >= 400: continue"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/http_retry_001"
 }

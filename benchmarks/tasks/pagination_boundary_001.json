@@ -1,0 +1,46 @@
+{
+  "diff_path": "fixtures/pagination_boundary_001.diff",
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "category": "bug",
+      "description": "Skips the final item at the page boundary.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "high"
+    },
+    {
+      "category": "missing_test",
+      "description": "No final-boundary case is covered.",
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "severity": "low"
+    }
+  ],
+  "issue_description": "Pagination must include every item through the requested exclusive end boundary, including the final page item.",
+  "must_not_find": [
+    "SQL injection"
+  ],
+  "replay_response_path": "replays/pagination_boundary_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "pagination_boundary_001",
+  "title": "Pagination Boundary 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "return items[start:end - 1]"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/pagination_boundary_001"
+}

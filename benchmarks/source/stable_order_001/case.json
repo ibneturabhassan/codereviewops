@@ -1,0 +1,43 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    return list(set(values))",
+      "category": "requirement_mismatch",
+      "confidence": 0.99,
+      "description": "Set conversion violates stable insertion order.",
+      "evidence": "The added line is return list(set(values)).",
+      "file": "solution.py",
+      "reasoning": "Set conversion violates stable insertion order.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "low",
+      "title": "Set conversion violates stable insertion order."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Deduplication must preserve the first-seen insertion order.",
+  "must_not_find": [
+    "SQL injection"
+  ],
+  "primary_category": "requirement_mismatch",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "requirement_mismatch"
+  ],
+  "task_id": "stable_order_001",
+  "title": "Stable Order 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return list(set(values))"
+    ],
+    "test_profile": null
+  }
+}

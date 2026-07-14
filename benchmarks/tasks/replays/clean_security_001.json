@@ -1,0 +1,8 @@
+{
+  "findings": [],
+  "limitations": [],
+  "overall_assessment": "pass",
+  "schema_version": "1.2",
+  "summary": "The replay finds no actionable issue.",
+  "tests_run": []
+}

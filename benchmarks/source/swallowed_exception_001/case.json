@@ -1,0 +1,55 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    except Exception: return None",
+      "category": "maintainability",
+      "confidence": 0.99,
+      "description": "A broad catch hides malformed state.",
+      "evidence": "The added line is except Exception: return None.",
+      "file": "solution.py",
+      "reasoning": "A broad catch hides malformed state.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "A broad catch hides malformed state."
+    },
+    {
+      "anchor": "        return payload[\"missing\"]",
+      "category": "bug",
+      "confidence": 0.99,
+      "description": "Returns an observable wrong fallback for malformed input.",
+      "evidence": "The added line is return payload[\"missing\"].",
+      "file": "solution.py",
+      "reasoning": "Returns an observable wrong fallback for malformed input.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Returns an observable wrong fallback for malformed input."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Malformed payloads must surface the documented failure instead of a fallback.",
+  "must_not_find": [
+    "security vulnerability"
+  ],
+  "primary_category": "maintainability",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "maintainability"
+  ],
+  "task_id": "swallowed_exception_001",
+  "title": "Swallowed Exception 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "except Exception: return None"
+    ],
+    "test_profile": null
+  }
+}

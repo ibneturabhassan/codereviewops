@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/duplicated_policy_001.diff",
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "category": "maintainability",
+      "description": "Duplicates normalization policy that can drift.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "low"
+    }
+  ],
+  "issue_description": "Normalization must use the shared policy implementation so behavior cannot drift.",
+  "must_not_find": [
+    "incorrect output"
+  ],
+  "replay_response_path": "replays/duplicated_policy_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "maintainability"
+  ],
+  "task_id": "duplicated_policy_001",
+  "title": "Duplicated Policy 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return value.strip().casefold()"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/duplicated_policy_001"
+}

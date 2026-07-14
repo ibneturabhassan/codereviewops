@@ -1,0 +1,29 @@
+{
+  "diff_path": "fixtures/clean_retry_001.diff",
+  "difficulty": "low",
+  "expected_findings": [],
+  "issue_description": "Retry only eligible failures within the exact configured budget.",
+  "must_not_find": [
+    "4xx retry",
+    "off-by-one"
+  ],
+  "replay_response_path": "replays/clean_retry_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "negative"
+  ],
+  "task_id": "clean_retry_001",
+  "title": "Clean Retry 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "result = value"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/clean_retry_001"
+}

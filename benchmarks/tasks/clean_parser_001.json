@@ -1,0 +1,29 @@
+{
+  "diff_path": "fixtures/clean_parser_001.diff",
+  "difficulty": "low",
+  "expected_findings": [],
+  "issue_description": "Parse the supported literal format and reject unsupported input.",
+  "must_not_find": [
+    "unsafe deserialization",
+    "code execution"
+  ],
+  "replay_response_path": "replays/clean_parser_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "negative"
+  ],
+  "task_id": "clean_parser_001",
+  "title": "Clean Parser 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "result = value"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/clean_parser_001"
+}

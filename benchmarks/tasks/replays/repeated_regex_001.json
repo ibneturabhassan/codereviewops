@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "category": "performance",
+      "confidence": 0.99,
+      "evidence": "The added line is pattern = re.compile(expression).",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
+      "file": "solution.py",
+      "line_end": 7,
+      "line_start": 7,
+      "reasoning": "Compiles an invariant regular expression inside the record loop.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Compiles an invariant regular expression inside the record loop."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

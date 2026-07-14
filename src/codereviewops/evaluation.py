@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from collections.abc import Sequence
 
 from codereviewops.models import (
@@ -55,18 +56,18 @@ def _maximum_matching(
     ]
 
 
-def _normalized_text(value: str) -> str:
-    return " ".join(value.casefold().split())
+def normalize_evaluator_text(value: str) -> str:
+    return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
 
 
 def _prohibited_hits(phrases: Sequence[str], findings: Sequence[Finding]) -> list[ProhibitedHit]:
     hits: list[ProhibitedHit] = []
     for actual_index, finding in enumerate(findings):
-        searchable = _normalized_text(
+        searchable = normalize_evaluator_text(
             " ".join((finding.title, finding.evidence, finding.reasoning))
         )
         for phrase in phrases:
-            normalized_phrase = _normalized_text(phrase)
+            normalized_phrase = normalize_evaluator_text(phrase)
             if normalized_phrase and normalized_phrase in searchable:
                 hits.append(ProhibitedHit(phrase=phrase, actual_index=actual_index))
     return hits

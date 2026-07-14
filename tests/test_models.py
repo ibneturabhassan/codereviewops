@@ -118,7 +118,52 @@ def test_expected_finding_has_exact_fields(expected_factory) -> None:
         "line_start",
         "line_end",
         "description",
+        "severity",
     }
+
+    assert finding.severity is None
+
+
+def test_legacy_benchmark_findings_forbid_severity(expected_factory) -> None:
+    finding = expected_factory().model_dump(mode="json")
+    finding["severity"] = "high"
+    data = {
+        "schema_version": "1.1",
+        "task_id": "legacy",
+        "title": "Legacy",
+        "issue_description": "Legacy tool task",
+        "diff_path": "fixtures/change.diff",
+        "expected_findings": [finding],
+        "must_not_find": [],
+        "difficulty": "low",
+        "tags": [],
+        "replay_response_path": "replays/review.json",
+        "workspace_path": "workspaces/legacy",
+        "tool_plan": {"read_files": ["module.py"]},
+    }
+    with pytest.raises(ValidationError, match="cannot declare severity"):
+        BenchmarkTask.model_validate(data)
+
+
+def test_schema_12_requires_severity_workspace_and_nonempty_plan(expected_factory) -> None:
+    finding = expected_factory().model_dump(mode="json")
+    finding["severity"] = "high"
+    data = {
+        "schema_version": "1.2",
+        "task_id": "canonical",
+        "title": "Canonical",
+        "issue_description": "Canonical tool task",
+        "diff_path": "fixtures/change.diff",
+        "expected_findings": [finding],
+        "must_not_find": [],
+        "difficulty": "low",
+        "tags": [],
+        "replay_response_path": "replays/review.json",
+        "workspace_path": "workspaces/canonical",
+        "tool_plan": {},
+    }
+    with pytest.raises(ValidationError, match="non-empty tool plan"):
+        BenchmarkTask.model_validate(data)
 
 
 def test_benchmark_rejects_more_than_maximum_expected_findings(

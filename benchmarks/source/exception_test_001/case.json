@@ -1,0 +1,44 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    assert lookup({\"key\": 1}, \"key\") == 1",
+      "category": "missing_test",
+      "confidence": 0.99,
+      "description": "Leaves the correct KeyError path untested.",
+      "evidence": "The added line is assert lookup({\"key\": 1}, \"key\") == 1.",
+      "file": "tests/test_solution.py",
+      "reasoning": "Leaves the correct KeyError path untested.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Leaves the correct KeyError path untested."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Mapping lookup is correct; tests must cover the missing-key exception contract.",
+  "must_not_find": [
+    "swallowed exception"
+  ],
+  "primary_category": "missing_test",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "missing_test"
+  ],
+  "task_id": "exception_test_001",
+  "title": "Exception Test 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "assert lookup({\"key\": 1}, \"key\") == 1"
+    ],
+    "test_profile": null
+  }
+}

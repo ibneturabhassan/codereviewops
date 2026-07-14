@@ -1,0 +1,44 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    assert retry([False, True], 2)",
+      "category": "missing_test",
+      "confidence": 0.99,
+      "description": "Leaves correct exhaustion behavior untested.",
+      "evidence": "The added line is assert retry([False, True], 2).",
+      "file": "tests/test_solution.py",
+      "reasoning": "Leaves correct exhaustion behavior untested.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Leaves correct exhaustion behavior untested."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Retry exhaustion is correct; tests must cover a budget exhausted without success.",
+  "must_not_find": [
+    "infinite retry"
+  ],
+  "primary_category": "missing_test",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "missing_test"
+  ],
+  "task_id": "retry_budget_test_001",
+  "title": "Retry Budget Test 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "assert retry([False, True], 2)"
+    ],
+    "test_profile": null
+  }
+}

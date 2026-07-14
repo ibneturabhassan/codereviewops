@@ -1,0 +1,44 @@
+{
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "anchor": "    assert contains(2, 1, 3)",
+      "category": "missing_test",
+      "confidence": 0.99,
+      "description": "Leaves empty and edge bounds untested.",
+      "evidence": "The added line is assert contains(2, 1, 3).",
+      "file": "tests/test_solution.py",
+      "reasoning": "Leaves empty and edge bounds untested.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "low",
+      "title": "Leaves empty and edge bounds untested."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Inclusive bound checks are correct; tests must cover empty and exact-edge inputs.",
+  "must_not_find": [
+    "implementation off-by-one"
+  ],
+  "primary_category": "missing_test",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "missing_test"
+  ],
+  "task_id": "boundary_test_001",
+  "title": "Boundary Test 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "assert contains(2, 1, 3)"
+    ],
+    "test_profile": null
+  }
+}

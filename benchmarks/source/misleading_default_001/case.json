@@ -1,0 +1,43 @@
+{
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "anchor": "def validate(value, strict=False):",
+      "category": "maintainability",
+      "confidence": 0.99,
+      "description": "The public default silently weakens documented strict validation.",
+      "evidence": "The added line is def validate(value, strict=False):.",
+      "file": "solution.py",
+      "reasoning": "The public default silently weakens documented strict validation.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "The public default silently weakens documented strict validation."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Public validation defaults must enforce the documented strict behavior.",
+  "must_not_find": [
+    "data race"
+  ],
+  "primary_category": "maintainability",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "maintainability"
+  ],
+  "task_id": "misleading_default_001",
+  "title": "Misleading Default 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "def validate(value, strict=False):"
+    ],
+    "test_profile": null
+  }
+}

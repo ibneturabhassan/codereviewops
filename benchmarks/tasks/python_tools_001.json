@@ -1,26 +1,38 @@
 {
-  "schema_version": "1.1",
-  "task_id": "python_tools_001",
-  "title": "Correct integer addition",
-  "issue_description": "The add function must return the sum of its two integer arguments.",
   "diff_path": "fixtures/python_tools_001.diff",
+  "difficulty": "low",
   "expected_findings": [
     {
       "category": "bug",
+      "description": "Subtracts instead of adding.",
       "file": "calculator.py",
-      "line_start": 5,
-      "line_end": 5,
-      "description": "The implementation subtracts instead of adding."
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "medium"
     }
   ],
-  "must_not_find": ["SQL injection"],
-  "difficulty": "low",
-  "tags": ["python", "tools", "unittest"],
+  "issue_description": "The add function must return the sum of its two integer arguments.",
+  "must_not_find": [
+    "integer overflow"
+  ],
   "replay_response_path": "replays/python_tools_001.json",
-  "workspace_path": "workspaces/python_tools_001",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "python_tools_001",
+  "title": "Python Tools 001",
   "tool_plan": {
-    "read_files": ["calculator.py", "tests/test_calculator.py"],
-    "searches": ["return left - right"],
-    "test_profile": "python-unittest-v1"
-  }
+    "read_files": [
+      "calculator.py",
+      "tests/test_calculator.py"
+    ],
+    "searches": [
+      "return left - right"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/python_tools_001"
 }

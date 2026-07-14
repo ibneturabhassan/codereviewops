@@ -1,0 +1,20 @@
+{
+  "difficulty": "low",
+  "diff_path": "fixtures/legacy.diff",
+  "expected_findings": [
+    {
+      "category": "bug",
+      "description": "Legacy finding without severity.",
+      "file": "module.py",
+      "line_end": 1,
+      "line_start": 1
+    }
+  ],
+  "issue_description": "Frozen schema 1.0 compatibility fixture.",
+  "must_not_find": [],
+  "replay_response_path": "replays/legacy.json",
+  "schema_version": "1.0",
+  "tags": ["legacy"],
+  "task_id": "legacy_10",
+  "title": "Legacy 1.0"
+}

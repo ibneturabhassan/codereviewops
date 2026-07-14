@@ -1,0 +1,43 @@
+{
+  "difficulty": "high",
+  "expected_findings": [
+    {
+      "anchor": "    return {\"message\": message, \"failed\": True}",
+      "category": "requirement_mismatch",
+      "confidence": 0.99,
+      "description": "Returns a nonstandard error object.",
+      "evidence": "The added line is return {\"message\": message, \"failed\": True}.",
+      "file": "solution.py",
+      "reasoning": "Returns a nonstandard error object.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Returns a nonstandard error object."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Failures must use the documented error object with the standard code and detail fields.",
+  "must_not_find": [
+    "command injection"
+  ],
+  "primary_category": "requirement_mismatch",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "requirement_mismatch"
+  ],
+  "task_id": "error_shape_001",
+  "title": "Error Shape 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return {\"message\": message, \"failed\": True}"
+    ],
+    "test_profile": null
+  }
+}

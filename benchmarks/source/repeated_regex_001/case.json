@@ -1,0 +1,43 @@
+{
+  "difficulty": "low",
+  "expected_findings": [
+    {
+      "anchor": "        pattern = re.compile(expression)",
+      "category": "performance",
+      "confidence": 0.99,
+      "description": "Compiles an invariant regular expression inside the record loop.",
+      "evidence": "The added line is pattern = re.compile(expression).",
+      "file": "solution.py",
+      "reasoning": "Compiles an invariant regular expression inside the record loop.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Compiles an invariant regular expression inside the record loop."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "Compile an invariant expression once and reuse it for every record.",
+  "must_not_find": [
+    "ReDoS"
+  ],
+  "primary_category": "performance",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "performance"
+  ],
+  "task_id": "repeated_regex_001",
+  "title": "Repeated Regex 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "pattern = re.compile(expression)"
+    ],
+    "test_profile": null
+  }
+}

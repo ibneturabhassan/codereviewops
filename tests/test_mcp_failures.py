@@ -13,7 +13,7 @@ from codereviewops.tools import DirectToolBackend, Workspace
 from codereviewops.workflow import _execute_mcp_tools
 
 ROOT = Path(__file__).parents[1]
-BENCHMARK_ROOT = ROOT / "benchmarks" / "tasks"
+BENCHMARK_ROOT = ROOT / "tests" / "fixtures" / "legacy_benchmarks"
 WORKSPACE_ROOT = BENCHMARK_ROOT / "workspaces" / "python_tools_001"
 DIFF = (BENCHMARK_ROOT / "fixtures" / "python_tools_001.diff").read_text(encoding="utf-8")
 

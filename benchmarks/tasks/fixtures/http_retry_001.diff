@@ -1,36 +1,20 @@
-diff --git a/src/http_client.py b/src/http_client.py
-index 44af32a..ad3bb8f 100644
---- a/src/http_client.py
-+++ b/src/http_client.py
-@@ -1,4 +1,12 @@
- class HttpClient:
-     def __init__(self, transport):
-         self.transport = transport
-+
-+    def get(self, url):
-+        for attempt in range(4):
-+            response = self.transport.get(url)
-+            if response.status_code < 400:
-+                return response
-+            if attempt < 3:
-+                continue
-+        return response
-diff --git a/tests/test_http_client.py b/tests/test_http_client.py
-new file mode 100644
-index 0000000..1daef11
+diff --git a/solution.py b/solution.py
+--- a/solution.py
++++ b/solution.py
+@@ -1,3 +1,5 @@
+ # ruff: noqa
+-def review(value=None):
+-    return value
++def review(statuses):
++    for status in statuses:
++        if status >= 400: continue
++    return None
+diff --git a/tests/test_solution.py b/tests/test_solution.py
 --- /dev/null
-+++ b/tests/test_http_client.py
-@@ -0,0 +1,13 @@
-+from unittest.mock import Mock
++++ b/tests/test_solution.py
+@@ -0,0 +1,5 @@
++# ruff: noqa
++from solution import request
 +
-+from http_client import HttpClient
-+
-+
-+def test_retries_server_errors_until_success():
-+    transport = Mock()
-+    transport.get.side_effect = [
-+        Mock(status_code=503),
-+        Mock(status_code=200),
-+    ]
-+
-+    assert HttpClient(transport).get("https://example.test").status_code == 200
++def test_normal_case():
++    assert request([500, 200]) == 200

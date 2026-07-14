@@ -16,8 +16,9 @@ from codereviewops.models import TestStatus as ReviewTestStatus
 from codereviewops.tools import ToolError
 
 ROOT = Path(__file__).parents[1]
-BENCHMARK = ROOT / "benchmarks" / "tasks" / "http_retry_001.json"
-TOOL_BENCHMARK = ROOT / "benchmarks" / "tasks" / "python_tools_001.json"
+LEGACY_BENCHMARKS = ROOT / "tests" / "fixtures" / "legacy_benchmarks"
+BENCHMARK = LEGACY_BENCHMARKS / "http_retry_001.json"
+TOOL_BENCHMARK = LEGACY_BENCHMARKS / "python_tools_001.json"
 REPLAY_VARIANTS = ROOT / "tests" / "fixtures" / "replays"
 runner = CliRunner()
 

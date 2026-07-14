@@ -1,0 +1,43 @@
+{
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "anchor": "    return header.strip()",
+      "category": "bug",
+      "confidence": 0.99,
+      "description": "Calls strip on an optional header.",
+      "evidence": "The added line is return header.strip().",
+      "file": "solution.py",
+      "reasoning": "Calls strip on an optional header.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Calls strip on an optional header."
+    }
+  ],
+  "expected_test_status": null,
+  "issue_description": "An absent optional header must be handled without raising and a present header must be normalized.",
+  "must_not_find": [
+    "header injection"
+  ],
+  "primary_category": "bug",
+  "replay_assessment": "needs_changes",
+  "replay_limitations": [],
+  "replay_summary": "The replay reports exactly the source-authored findings.",
+  "schema_version": "1.0",
+  "tags": [
+    "python",
+    "synthetic",
+    "bug"
+  ],
+  "task_id": "nullable_header_001",
+  "title": "Nullable Header 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return header.strip()"
+    ],
+    "test_profile": null
+  }
+}

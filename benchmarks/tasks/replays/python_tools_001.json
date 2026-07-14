@@ -1,22 +1,24 @@
 {
-  "schema_version": "1.2",
-  "summary": "The changed arithmetic operation violates the requested addition behavior.",
-  "overall_assessment": "needs_changes",
   "findings": [
     {
-      "title": "Addition implementation subtracts",
-      "severity": "high",
       "category": "bug",
+      "confidence": 0.99,
+      "evidence": "The added line is return left - right.",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
       "file": "calculator.py",
-      "line_start": 5,
-      "line_end": 5,
-      "evidence": "The changed line returns left - right.",
-      "reasoning": "Subtraction produces an incorrect result whenever the right operand is nonzero.",
-      "recommendation": "Return left + right.",
-      "confidence": 1.0,
-      "evidence_trace_ids": ["tool-001", "tool-003"]
+      "line_end": 3,
+      "line_start": 3,
+      "reasoning": "Subtracts instead of adding.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Subtracts instead of adding."
     }
   ],
-  "tests_run": [],
-  "limitations": []
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
 }

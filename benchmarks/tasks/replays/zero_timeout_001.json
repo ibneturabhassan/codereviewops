@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "category": "bug",
+      "confidence": 0.99,
+      "evidence": "The added line is return timeout or None.",
+      "evidence_trace_ids": [
+        "tool-001"
+      ],
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "reasoning": "Treats an explicit zero timeout as missing and unbounded.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "high",
+      "title": "Treats an explicit zero timeout as missing and unbounded."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

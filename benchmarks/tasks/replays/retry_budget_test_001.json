@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "category": "missing_test",
+      "confidence": 0.99,
+      "evidence": "The added line is assert retry([False, True], 2).",
+      "evidence_trace_ids": [
+        "tool-002"
+      ],
+      "file": "tests/test_solution.py",
+      "line_end": 5,
+      "line_start": 5,
+      "reasoning": "Leaves correct exhaustion behavior untested.",
+      "recommendation": "Revise the change to satisfy the stated contract.",
+      "severity": "medium",
+      "title": "Leaves correct exhaustion behavior untested."
+    }
+  ],
+  "limitations": [],
+  "overall_assessment": "needs_changes",
+  "schema_version": "1.2",
+  "summary": "The replay reports exactly the source-authored findings.",
+  "tests_run": []
+}

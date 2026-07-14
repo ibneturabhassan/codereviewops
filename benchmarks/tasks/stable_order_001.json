@@ -1,0 +1,37 @@
+{
+  "diff_path": "fixtures/stable_order_001.diff",
+  "difficulty": "medium",
+  "expected_findings": [
+    {
+      "category": "requirement_mismatch",
+      "description": "Set conversion violates stable insertion order.",
+      "file": "solution.py",
+      "line_end": 3,
+      "line_start": 3,
+      "severity": "low"
+    }
+  ],
+  "issue_description": "Deduplication must preserve the first-seen insertion order.",
+  "must_not_find": [
+    "SQL injection"
+  ],
+  "replay_response_path": "replays/stable_order_001.json",
+  "schema_version": "1.2",
+  "tags": [
+    "python",
+    "synthetic",
+    "requirement_mismatch"
+  ],
+  "task_id": "stable_order_001",
+  "title": "Stable Order 001",
+  "tool_plan": {
+    "read_files": [
+      "solution.py"
+    ],
+    "searches": [
+      "return list(set(values))"
+    ],
+    "test_profile": null
+  },
+  "workspace_path": "workspaces/stable_order_001"
+}

@@ -37,7 +37,7 @@ def _run_tool_task():
     return run_loaded_task(loaded, ReplayProvider(loaded.replay_path), test_runner=FakeRunner())
 
 
-TOOL_TASK = ROOT / "benchmarks" / "tasks" / "python_tools_001.json"
+TOOL_TASK = ROOT / "tests" / "fixtures" / "legacy_benchmarks" / "python_tools_001.json"
 
 
 def _task_data(**overrides):
@@ -360,7 +360,9 @@ def test_legacy_unreadable_diff_raises_safe_input_error_before_provider() -> Non
 
     from codereviewops.io import InputError
 
-    loaded = replace(load_task(ROOT / "benchmarks" / "tasks" / "http_retry_001.json"))
+    loaded = replace(
+        load_task(ROOT / "tests" / "fixtures" / "legacy_benchmarks" / "http_retry_001.json")
+    )
     loaded = replace(loaded, diff_path=StaticDiffPath(None))
     calls = 0
 
