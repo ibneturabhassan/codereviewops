@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from enum import StrEnum
 from math import isfinite
 from pathlib import PurePosixPath, PureWindowsPath
@@ -25,6 +27,18 @@ from codereviewops.contracts import (
     TOOL_PROMPT_VERSION,
     is_valid_model_identifier,
 )
+from codereviewops.mcp_manifest import (
+    CAPABILITIES_JSON,
+    MCP_PROTOCOL_VERSION,
+    MCP_SERVER_VERSION,
+    READ_INPUT_SCHEMA,
+    SAFE_ANNOTATIONS_JSON,
+    SEARCH_INPUT_SCHEMA,
+    TEST_INPUT_SCHEMA,
+    McpProtocolVersion,
+    canonical_fingerprint,
+)
+from codereviewops.tool_contracts import ToolErrorCode
 
 SchemaVersion = Literal["1.0"]
 BenchmarkSchemaVersion = Literal["1.0", "1.1"]
@@ -310,23 +324,6 @@ class RunTestsResult(StrictModel):
     output_truncated: bool
 
 
-ToolErrorCode = Literal[
-    "invalid_path",
-    "changed_workspace",
-    "read_failed",
-    "invalid_utf8",
-    "binary_file",
-    "limit_exceeded",
-    "docker_unavailable",
-    "docker_infrastructure",
-    "cleanup_failed",
-    "unsupported_profile",
-    "invalid_diff",
-    "diff_no_added_lines",
-    "unsupported_text",
-]
-
-
 class ToolFailureResult(StrictModel):
     kind: Literal["tool_failure"]
     code: ToolErrorCode
@@ -577,8 +574,107 @@ class ProviderResult(StrictModel):
         return value
 
 
+class McpServerRecord(StrictModel):
+    server_name: Literal["codereviewops-repo-mcp", "codereviewops-test-mcp"]
+    server_version: Literal["0.1.0"] | None = None
+    protocol_version: McpProtocolVersion | None = None
+    capability_fingerprint: Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")] | None = None
+    schema_fingerprint: Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")] | None = None
+    lifecycle: list[
+        Literal[
+            "planned",
+            "spawned",
+            "initialized",
+            "tools_validated",
+            "close_requested",
+            "closed",
+            "failed",
+            "skipped",
+        ]
+    ]
+    failure_stage: (
+        Literal[
+            "protocol_preflight",
+            "configuration",
+            "client_runtime",
+            "spawn",
+            "initialize",
+            "list_tools",
+            "call_tool",
+            "shutdown",
+            "skipped_after_failure",
+        ]
+        | None
+    ) = None
+
+    @model_validator(mode="after")
+    def validate_lifecycle(self) -> McpServerRecord:
+        _validate_mcp_server_record(self)
+        return self
+
+
+def _validate_mcp_server_record(record: McpServerRecord) -> None:
+    if (
+        not record.lifecycle
+        or record.lifecycle[0] != "planned"
+        or len(set(record.lifecycle)) != len(record.lifecycle)
+    ):
+        raise ValueError("MCP server lifecycle is invalid")
+    success = [
+        "planned",
+        "spawned",
+        "initialized",
+        "tools_validated",
+        "close_requested",
+        "closed",
+    ]
+    if record.failure_stage is None and record.lifecycle != success:
+        raise ValueError("successful MCP server lifecycle is incomplete")
+    if record.failure_stage is not None and record.lifecycle[-1] not in {
+        "closed",
+        "failed",
+        "skipped",
+    }:
+        raise ValueError("failed MCP server lifecycle is not terminal")
+    observed = (
+        record.server_version,
+        record.protocol_version,
+        record.capability_fingerprint,
+        record.schema_fingerprint,
+    )
+    if "tools_validated" not in record.lifecycle:
+        if any(value is not None for value in observed):
+            raise ValueError("unvalidated MCP server cannot claim observed metadata")
+        return
+    if (
+        record.server_version != MCP_SERVER_VERSION
+        or record.protocol_version != MCP_PROTOCOL_VERSION
+    ):
+        raise ValueError("MCP server identity or protocol is invalid")
+    if record.capability_fingerprint != canonical_fingerprint(CAPABILITIES_JSON):
+        raise ValueError("MCP capability fingerprint is invalid")
+    from codereviewops.mcp_typed import output_schema_for
+
+    definitions = (
+        [("read_file", READ_INPUT_SCHEMA), ("search_code", SEARCH_INPUT_SCHEMA)]
+        if record.server_name == "codereviewops-repo-mcp"
+        else [("run_tests", TEST_INPUT_SCHEMA)]
+    )
+    tools = [
+        {
+            "name": name,
+            "inputSchema": input_schema,
+            "outputSchema": output_schema_for(name),
+            "annotations": SAFE_ANNOTATIONS_JSON,
+        }
+        for name, input_schema in definitions
+    ]
+    if record.schema_fingerprint != canonical_fingerprint(tools):
+        raise ValueError("MCP schema fingerprint is invalid")
+
+
 class RunArtifact(StrictModel):
-    schema_version: Literal["1.0", "1.1", "1.2"]
+    schema_version: Literal["1.0", "1.1", "1.2", "1.3"]
     task_id: str
     provider: str
     review: ReviewReport
@@ -605,13 +701,21 @@ class RunArtifact(StrictModel):
     failure_code: ShortText | None = None
     failure_message: ShortText | None = None
 
+    tool_transport: Literal["mcp_stdio"] | None = None
+    mcp_protocol_version: McpProtocolVersion | None = None
+    mcp_servers: list[McpServerRecord] = []
+    semantic_trace_fingerprint: Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")] | None = (
+        None
+    )
+
     @model_validator(mode="after")
     def validate_provider_metadata(self) -> RunArtifact:
         if self.schema_version == "1.0":
+            self._validate_mcp_metadata()
             return self
         if self.provider not in ARTIFACT_PROVIDERS:
             raise ValueError("1.1 artifacts require a supported provider")
-        if self.schema_version == "1.2" and self.provider_status == "not_called":
+        if self.schema_version in {"1.2", "1.3"} and self.provider_status == "not_called":
             metadata = (
                 self.requested_model,
                 self.response_model,
@@ -622,7 +726,7 @@ class RunArtifact(StrictModel):
             )
             if any(value is not None for value in metadata):
                 raise ValueError("provider metadata must be absent when provider was not called")
-        if self.schema_version == "1.2" and self.final_state == WorkflowState.FAILED:
+        if self.schema_version in {"1.2", "1.3"} and self.final_state == WorkflowState.FAILED:
             return self._validate_tool_metadata()
         if self.provider == "replay":
             if (
@@ -644,7 +748,7 @@ class RunArtifact(StrictModel):
                 and not is_valid_model_identifier(self.response_model)
             )
             or self.prompt_version
-            != (TOOL_PROMPT_VERSION if self.schema_version == "1.2" else PROMPT_VERSION)
+            != (TOOL_PROMPT_VERSION if self.schema_version in {"1.2", "1.3"} else PROMPT_VERSION)
             or self.structured_output_mode != LIVE_STRUCTURED_OUTPUT_MODE
             or self.latency_ms is None
             or not isfinite(self.latency_ms)
@@ -653,8 +757,67 @@ class RunArtifact(StrictModel):
             raise ValueError("live 1.1 artifacts require complete safe provider metadata")
         return self._validate_tool_metadata()
 
+    def _validate_mcp_metadata(self) -> None:
+        metadata = (
+            self.tool_transport,
+            self.mcp_protocol_version,
+            self.mcp_servers,
+            self.semantic_trace_fingerprint,
+        )
+        if self.schema_version != "1.3":
+            if any(metadata):
+                raise ValueError("MCP transport metadata requires artifact schema 1.3")
+            return
+
+        if (
+            self.tool_transport != "mcp_stdio"
+            or self.mcp_protocol_version is None
+            or not self.mcp_servers
+            or self.semantic_trace_fingerprint is None
+        ):
+            raise ValueError("1.3 artifacts require complete MCP transport metadata")
+        expected_servers = []
+        if self.declared_tool_plan is not None:
+            if self.declared_tool_plan.read_files or self.declared_tool_plan.searches:
+                expected_servers.append("codereviewops-repo-mcp")
+            if self.declared_tool_plan.test_profile is not None:
+                expected_servers.append("codereviewops-test-mcp")
+        actual_servers = [record.server_name for record in self.mcp_servers]
+        if actual_servers != expected_servers:
+            raise ValueError("MCP server records do not match the declared tool plan")
+        if any(
+            record.protocol_version not in {None, self.mcp_protocol_version}
+            for record in self.mcp_servers
+        ):
+            raise ValueError("MCP server protocol metadata is inconsistent")
+        success_lifecycle = [
+            "planned",
+            "spawned",
+            "initialized",
+            "tools_validated",
+            "close_requested",
+            "closed",
+        ]
+        if self.final_state == WorkflowState.COMPLETE and any(
+            record.failure_stage is not None or record.lifecycle != success_lifecycle
+            for record in self.mcp_servers
+        ):
+            raise ValueError("successful MCP artifact requires fully closed servers")
+        semantic_trace = []
+        for entry in self.tool_trace:
+            serialized = entry.model_dump(mode="json")
+            serialized["latency_ms"] = 0
+            semantic_trace.append(serialized)
+        encoded = json.dumps(
+            semantic_trace, sort_keys=True, separators=(",", ":"), ensure_ascii=True
+        ).encode()
+        expected_fingerprint = "sha256:" + hashlib.sha256(encoded).hexdigest()
+        if self.semantic_trace_fingerprint != expected_fingerprint:
+            raise ValueError("semantic tool trace fingerprint is invalid")
+
     def _validate_tool_metadata(self) -> RunArtifact:
-        if self.schema_version != "1.2":
+        self._validate_mcp_metadata()
+        if self.schema_version not in {"1.2", "1.3"}:
             if (
                 self.final_state is not None
                 or self.state_transitions
@@ -850,7 +1013,7 @@ class RunArtifact(StrictModel):
         handler: SerializerFunctionWrapHandler,
     ) -> dict[str, Any]:
         data = cast(dict[str, Any], handler(self))
-        if self.schema_version != "1.2":
+        if self.schema_version not in {"1.2", "1.3"}:
             for field in (
                 "final_state",
                 "state_transitions",
@@ -866,4 +1029,13 @@ class RunArtifact(StrictModel):
                 "failure_message",
             ):
                 data.pop(field, None)
+        if self.schema_version != "1.3":
+            for field in (
+                "tool_transport",
+                "mcp_protocol_version",
+                "mcp_servers",
+                "semantic_trace_fingerprint",
+            ):
+                data.pop(field, None)
+
         return data

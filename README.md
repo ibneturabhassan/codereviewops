@@ -7,7 +7,9 @@ auditable, and does not require API keys or network access. Milestone 2 adds dir
 single-request Groq and Mistral inference for small opt-in evaluations; free-tier limits
 and model availability are controlled by those providers. Milestone 3 adds a bounded,
 manifest-driven tool workflow for deterministic workspace reads, literal code searches,
-and an opt-in isolated Python unittest profile.
+and an opt-in isolated Python unittest profile. Milestone 4 phases 1-2 add two
+local, stdio-only MCP servers and a transport adapter while preserving the same bounded tool
+semantics.
 
 ## What Milestone 1 does
 
@@ -60,6 +62,24 @@ Then run the deterministic tool benchmark:
 
     uv run codereviewops review --task benchmarks/tasks/python_tools_001.json --provider replay --output-dir artifacts/python_tools_001
 
+### Local MCP transport
+
+Tool-enabled schema 1.1 tasks can use the same repository and test tools through the
+local MCP stdio transport:
+
+    uv run codereviewops review --task benchmarks/tasks/python_tools_001.json --provider replay --tool-transport mcp-stdio --output-dir artifacts/python_tools_001_mcp
+
+The default remains `--tool-transport direct`. MCP mode launches only the fixed
+`codereviewops-repo-mcp` and `codereviewops-test-mcp` Python modules with workspace
+authority supplied by the parent process. Benchmark inputs cannot choose commands,
+working directories, environment variables, roots, or images. The servers expose only
+`read_file`, `search_code`, and the fixed `run_tests` profile over stdio; they advertise
+no network, resource, prompt, or subscription capabilities.
+
+MCP runs emit schema 1.3 artifacts with the negotiated protocol, exact server identity
+and schema fingerprints, completed lifecycle records, and a latency-neutral semantic
+trace fingerprint. Direct runs continue to emit schema 1.2 artifacts. Schema 1.0 tasks
+reject MCP mode.
 The runner accepts only the fixed `python-unittest-v1` profile. It starts Docker with no
 network, no added capabilities, no new privileges, a read-only root filesystem and
 workspace mount, resource limits, a non-root user, and a 30-second deadline. CodeReviewOps
@@ -95,6 +115,7 @@ The optional live smoke test is skipped unless explicitly enabled and configured
 
     uv run ruff check .
     uv run mypy src
+    uv run pytest tests/test_mcp.py
     uv run pytest -m "not live and not docker"
 
 ## Current scope and limitations
@@ -104,5 +125,5 @@ API, or dashboard. Replay output proves the evaluation boundary deterministicall
 inference measures a selected hosted model but remains a bounded, one-request workflow;
 tool context is gathered before that single request.
 
-Future milestones will add MCP integrations, a larger benchmark suite, model comparisons,
-and a dashboard.
+Future milestones will expand the benchmark suite, model comparisons, and dashboard work.
+The current MCP scope is deliberately local and stdio-only.

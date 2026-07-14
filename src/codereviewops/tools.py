@@ -13,7 +13,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Literal, Protocol, cast
 
 from codereviewops.models import (
     ChangedLocation,
@@ -26,7 +26,6 @@ from codereviewops.models import (
     SearchMatch,
     TestStatus,
     ToolArguments,
-    ToolErrorCode,
     ToolFailureResult,
     ToolName,
     ToolPlan,
@@ -38,6 +37,7 @@ from codereviewops.models import (
     VerificationResult,
     normalize_relative_posix_path,
 )
+from codereviewops.tool_contracts import ToolError as ToolError
 
 MAX_WORKSPACE_DEPTH = 12
 MAX_WORKSPACE_FILES = 2_000
@@ -51,16 +51,6 @@ TEST_COMMAND: Literal["python -B -m unittest discover -s tests -p test_*.py"] = 
 )
 _DIFF_HUNK = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(?: .*)?$")
 MAX_DIFF_LINES = 100_000
-
-
-class ToolError(ValueError):
-    """Safe categorized tool failure without host or provider-controlled text."""
-
-    def __init__(self, code: ToolErrorCode, message: str, *, retryable: bool = False) -> None:
-        self.code = code
-        self.message = message
-        self.retryable = retryable
-        super().__init__(message)
 
 
 class ToolExecutionError(ToolError):
@@ -525,9 +515,56 @@ def _failure(error: ToolError) -> ToolFailureResult:
     )
 
 
-def execute_tool_plan(
-    workspace: Workspace, plan: ToolPlan, test_runner: TestRunner, diff_text: str
-) -> ToolRun:
+class ToolBackend(Protocol):
+    def read_file(self, path: str) -> ReadFileResult: ...
+
+    def search_code(self, query: str) -> SearchCodeResult: ...
+
+    def run_tests(self, profile: str) -> RunTestsResult: ...
+
+    def close(self) -> ToolError | None: ...
+
+
+class DirectToolBackend:
+    def __init__(self, workspace: Workspace, test_runner: TestRunner) -> None:
+        self.workspace = workspace
+        self.test_runner = test_runner
+
+    def read_file(self, path: str) -> ReadFileResult:
+        return self.workspace.read_result(path)
+
+    def search_code(self, query: str) -> SearchCodeResult:
+        return self.workspace.search_code(query)
+
+    def run_tests(self, profile: str) -> RunTestsResult:
+        if profile != "python-unittest-v1":
+            raise ToolError("unsupported_profile", "test profile is unsupported")
+        if getattr(self.test_runner, "requires_sealed_snapshot", False):
+            with self.workspace.sealed_snapshot() as snapshot:
+                execution = self.test_runner.run(snapshot, profile)
+        else:
+            execution = self.test_runner.run(self.workspace.root, profile)
+        if execution.infrastructure_error:
+            raise ToolError(
+                "cleanup_failed"
+                if execution.error_code == "cleanup_failed"
+                else "docker_infrastructure",
+                "isolated test infrastructure failed",
+            )
+        return RunTestsResult(
+            kind="run_tests_success",
+            command=TEST_COMMAND,
+            status=execution.status,
+            profile=cast(Literal["python-unittest-v1"], profile),
+            summary=_sanitize_text(execution.summary),
+            output_truncated=execution.output_truncated,
+        )
+
+    def close(self) -> ToolError | None:
+        return None
+
+
+def execute_tool_plan_with_backend(backend: ToolBackend, plan: ToolPlan, diff_text: str) -> ToolRun:
     trace: list[ToolTraceEntry] = []
 
     def append(
@@ -556,7 +593,7 @@ def execute_tool_plan(
         started = time.monotonic()
         read_arguments = ReadFileArguments(kind="read_file", path=reference)
         try:
-            read_result = workspace.read_result(reference)
+            read_result = backend.read_file(reference)
             append(
                 ToolName.READ_FILE,
                 read_arguments,
@@ -572,7 +609,7 @@ def execute_tool_plan(
         started = time.monotonic()
         search_arguments = SearchCodeArguments(kind="search_code", query=query)
         try:
-            search_result = workspace.search_code(query)
+            search_result = backend.search_code(query)
             provenance = [
                 TraceProvenance(path=match.path, line_start=match.line, line_end=match.line)
                 for match in search_result.matches
@@ -587,29 +624,8 @@ def execute_tool_plan(
         started = time.monotonic()
         test_arguments = RunTestsArguments(kind="run_tests", profile=plan.test_profile)
         try:
-            if getattr(test_runner, "requires_sealed_snapshot", False):
-                with workspace.sealed_snapshot() as snapshot:
-                    execution = test_runner.run(snapshot, plan.test_profile)
-            else:
-                execution = test_runner.run(workspace.root, plan.test_profile)
-            if execution.infrastructure_error:
-                error = ToolError(
-                    "cleanup_failed"
-                    if execution.error_code == "cleanup_failed"
-                    else "docker_infrastructure",
-                    "isolated test infrastructure failed",
-                )
-                append(ToolName.RUN_TESTS, test_arguments, _failure(error), started)
-                raise ToolExecutionError(error, trace)
+            test_result = backend.run_tests(plan.test_profile)
             locations = changed_locations(diff_text)
-            test_result = RunTestsResult(
-                kind="run_tests_success",
-                command=TEST_COMMAND,
-                status=execution.status,
-                profile=plan.test_profile,
-                summary=_sanitize_text(execution.summary),
-                output_truncated=execution.output_truncated,
-            )
             provenance = []
             for location in locations:
                 provenance.append(
@@ -622,8 +638,8 @@ def execute_tool_plan(
             append(ToolName.RUN_TESTS, test_arguments, test_result, started, provenance)
             verification = VerificationResult(
                 profile=plan.test_profile,
-                status=execution.status,
-                summary=_sanitize_text(execution.summary),
+                status=test_result.status,
+                summary=test_result.summary,
                 changed_locations=locations,
             )
         except ToolExecutionError:
@@ -632,3 +648,10 @@ def execute_tool_plan(
             append(ToolName.RUN_TESTS, test_arguments, _failure(exc), started)
             raise ToolExecutionError(exc, trace) from None
     return ToolRun(trace=trace, verification=verification)
+
+
+def execute_tool_plan(
+    workspace: Workspace, plan: ToolPlan, test_runner: TestRunner, diff_text: str
+) -> ToolRun:
+    backend = DirectToolBackend(workspace, test_runner)
+    return execute_tool_plan_with_backend(backend, plan, diff_text)

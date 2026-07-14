@@ -20,6 +20,8 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run mypy src
+      - name: Local MCP stdio integration
+        run: uv run pytest tests/test_mcp.py -m mcp
       - run: uv run pytest -m "not live and not docker"
       - run: uv build
       - name: Evaluation smoke test

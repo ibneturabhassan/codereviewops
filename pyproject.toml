@@ -10,12 +10,15 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "httpx>=0.28,<1",
+  "mcp==1.27.2",
   "pydantic>=2.12,<3",
   "typer>=0.21,<1",
 ]
 
 [project.scripts]
 codereviewops = "codereviewops.cli:app"
+codereviewops-repo-mcp = "codereviewops.mcp_servers:run_repo_server"
+codereviewops-test-mcp = "codereviewops.mcp_servers:run_test_server"
 
 [dependency-groups]
 dev = [
@@ -44,6 +47,7 @@ testpaths = ["tests"]
 markers = [
   "live: opt-in test that makes one real provider request",
   "docker: integration test for the pinned isolated tool runner",
+  "mcp: local MCP stdio integration tests",
 ]
 
 [tool.ruff]

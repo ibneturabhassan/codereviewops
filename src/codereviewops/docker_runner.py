@@ -5,16 +5,15 @@ from __future__ import annotations
 import os
 import re
 import shutil
-import signal
+import signal  # noqa: F401  # compatibility export
 import stat
 import subprocess
 import threading
-from contextlib import suppress
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
 from codereviewops.models import TestStatus
+from codereviewops.process_control import ProcessTreeController
 from codereviewops.tools import TestExecution, ToolError
 
 RUNNER_TAG = "codereviewops/python-unittest:0.1.0"
@@ -91,100 +90,6 @@ class _OutputCollector:
                 self._total += len(accepted)
                 if len(accepted) != len(chunk):
                     self.truncated = True
-
-
-class ProcessTreeController:
-    """Start and terminate the Docker client as an isolated process tree."""
-
-    def __init__(
-        self,
-        platform: str | None = None,
-        system_root: Path | None = None,
-    ) -> None:
-        self.platform = platform or ("windows" if os.name == "nt" else "posix")
-        self.system_root = system_root
-
-    def popen_kwargs(self) -> dict[str, Any]:
-        if self.platform == "posix":
-            return {"start_new_session": True}
-        if self.platform == "windows":
-            return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
-        raise ToolError("docker_infrastructure", "process platform is unsupported")
-
-    def _taskkill(self, pid: int) -> bool:
-        root_value = self.system_root or Path(os.environ.get("SYSTEMROOT") or "")
-        if not root_value.is_absolute():
-            return False
-        try:
-            root = root_value.resolve(strict=True)
-            executable = (root / "System32" / "taskkill.exe").resolve(strict=True)
-        except OSError:
-            return False
-        if (
-            executable.name.casefold() != "taskkill.exe"
-            or not executable.is_file()
-            or not executable.is_relative_to(root)
-        ):
-            return False
-        try:
-            completed = subprocess.run(
-                [str(executable), "/PID", str(pid), "/T", "/F"],
-                check=False,
-                capture_output=True,
-                timeout=5,
-                shell=False,
-            )
-        except (OSError, subprocess.TimeoutExpired):
-            return False
-        return completed.returncode == 0
-
-    def terminate(self, process: subprocess.Popen[bytes]) -> bool:
-        pid = getattr(process, "pid", None)
-        if not isinstance(pid, int) or pid <= 0:
-            return False
-
-        def reap_parent() -> bool:
-            try:
-                process.wait(timeout=2)
-            except (OSError, subprocess.TimeoutExpired):
-                return False
-            return True
-
-        if self.platform == "windows":
-            tree_cleaned = self._taskkill(pid)
-            parent_reaped = reap_parent()
-            return tree_cleaned and parent_reaped
-        if self.platform != "posix":
-            return False
-
-        kill_group: Any = getattr(os, "killpg")  # noqa: B009
-        try:
-            kill_group(pid, signal.SIGTERM)
-        except ProcessLookupError:
-            return reap_parent()
-        except OSError:
-            reap_parent()
-            return False
-
-        with suppress(OSError, subprocess.TimeoutExpired):
-            process.wait(timeout=2)
-        try:
-            kill_group(pid, getattr(signal, "SIGKILL", 9))
-        except ProcessLookupError:
-            return reap_parent()
-        except OSError:
-            reap_parent()
-            return False
-
-        if not reap_parent():
-            return False
-        try:
-            kill_group(pid, 0)
-        except ProcessLookupError:
-            return True
-        except OSError:
-            return False
-        return False
 
 
 class DockerTestRunner:

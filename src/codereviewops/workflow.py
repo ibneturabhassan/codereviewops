@@ -2,24 +2,30 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 from codereviewops.docker_runner import DockerTestRunner
 from codereviewops.evaluation import evaluate_review
 from codereviewops.io import InputError, LoadedTask, load_task
+from codereviewops.mcp_manifest import MCP_PROTOCOL_VERSION, McpProtocolVersion
+from codereviewops.mcp_owned_backend import McpStdioToolBackend
 from codereviewops.models import (
     BenchmarkTask,
     CandidateVerification,
     EvaluationResult,
     Finding,
+    McpServerRecord,
     OverallAssessment,
     ReviewContext,
     ReviewReport,
     RunArtifact,
     RunTestsResult,
     TestRun,
+    ToolPlan,
     ToolStatus,
     ToolTraceEntry,
     TraceInfluence,
@@ -37,8 +43,54 @@ from codereviewops.tools import (
     Workspace,
     changed_locations,
     execute_tool_plan,
+    execute_tool_plan_with_backend,
     parse_unified_diff,
 )
+
+
+def _semantic_trace_fingerprint(trace: list[ToolTraceEntry]) -> str:
+    semantic = []
+    for entry in trace:
+        data = entry.model_dump(mode="json")
+        data["latency_ms"] = 0
+        semantic.append(data)
+    encoded = json.dumps(semantic, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
+
+def _aborted_mcp_records(backend: McpStdioToolBackend) -> list[McpServerRecord]:
+    backend.abort_before_open()
+    backend.close()
+    return [McpServerRecord.model_validate(record) for record in backend.snapshot()]
+
+
+def _execute_mcp_tools(
+    backend: McpStdioToolBackend,
+    plan: ToolPlan,
+    diff_text: str,
+) -> tuple[ToolRun, list[McpServerRecord], ToolError | None, list[ToolTraceEntry]]:
+    tool_run = ToolRun(trace=[], verification=None)
+    failure: ToolError | None = None
+    failure_trace: list[ToolTraceEntry] = []
+    try:
+        backend.open()
+        tool_run = execute_tool_plan_with_backend(backend, plan, diff_text)
+        failure_trace = tool_run.trace
+    except ToolExecutionError as exc:
+        failure = exc
+        failure_trace = exc.trace
+    except ToolError as exc:
+        failure = exc
+    finally:
+        try:
+            cleanup_failure = backend.close()
+        except ToolError as exc:
+            cleanup_failure = exc
+        if cleanup_failure is not None:
+            failure = cleanup_failure
+        records = [McpServerRecord.model_validate(record) for record in backend.snapshot()]
+    return tool_run, records, failure, failure_trace
+
 
 PLANNER_VERSION = "manifest-v1"
 AGENT_VERSION = "tool-agent-v1"
@@ -128,6 +180,9 @@ def _failure_artifact(
     verification: VerificationResult | None,
     code: str,
     message: str,
+    mcp_records: list[McpServerRecord] | None = None,
+    mcp_protocol: McpProtocolVersion | None = None,
+    mcp_attempted: bool = False,
 ) -> RunArtifact:
     machine.fail()
     tool_run = ToolRun(trace=trace, verification=verification)
@@ -140,7 +195,7 @@ def _failure_artifact(
         limitations=["Review stopped after a safe workflow failure."],
     )
     return RunArtifact(
-        schema_version="1.2",
+        schema_version="1.3" if mcp_attempted else "1.2",
         task_id=loaded.task.task_id,
         provider=provider_name,
         review=report,
@@ -158,6 +213,10 @@ def _failure_artifact(
         agent_version=AGENT_VERSION,
         failure_code=code,
         failure_message=message,
+        tool_transport="mcp_stdio" if mcp_attempted else None,
+        mcp_protocol_version=mcp_protocol,
+        mcp_servers=mcp_records or [],
+        semantic_trace_fingerprint=(_semantic_trace_fingerprint(trace) if mcp_attempted else None),
     )
 
 
@@ -257,18 +316,50 @@ def run_loaded_task(
     provider: ReviewProvider,
     provider_name: str = "replay",
     test_runner: TestRunner | None = None,
+    tool_transport: Literal["direct", "mcp-stdio"] = "direct",
 ) -> tuple[BenchmarkTask, RunArtifact]:
     BenchmarkTask.model_validate(loaded.task.model_dump(mode="python"))
     machine = WorkflowMachine()
     trace: list[ToolTraceEntry] = []
     tool_run = ToolRun(trace=[], verification=None)
+    if tool_transport not in {"direct", "mcp-stdio"}:
+        raise InputError("unsupported tool transport; expected direct or mcp-stdio")
+    if loaded.task.schema_version == "1.0" and tool_transport != "direct":
+        raise InputError("schema 1.0 tasks do not support MCP tool transport")
+    mcp_attempted = tool_transport == "mcp-stdio"
+    mcp_records: list[McpServerRecord] = []
+    mcp_protocol: McpProtocolVersion | None = None
+    mcp_backend: McpStdioToolBackend | None = None
+    if tool_transport == "mcp-stdio":
+        plan = loaded.task.tool_plan
+        if plan is None or not (plan.read_files or plan.searches or plan.test_profile):
+            raise InputError("MCP tool transport requires at least one declared tool")
+        if loaded.workspace_path is None or loaded.benchmark_root is None:
+            raise InputError("MCP tool workspace is unavailable")
+        mcp_backend = McpStdioToolBackend(
+            loaded.workspace_path,
+            loaded.benchmark_root,
+            plan,
+        )
+        mcp_protocol = MCP_PROTOCOL_VERSION
     try:
         diff_text = loaded.diff_path.read_text(encoding="utf-8")
     except (OSError, UnicodeError):
         if loaded.task.schema_version == "1.0":
             raise InputError("diff is missing or inaccessible") from None
+        if mcp_backend is not None:
+            mcp_records = _aborted_mcp_records(mcp_backend)
         return loaded.task, _failure_artifact(
-            loaded, provider_name, machine, trace, None, "read_failed", "diff could not be read"
+            loaded,
+            provider_name,
+            machine,
+            trace,
+            None,
+            "read_failed",
+            "diff could not be read",
+            mcp_records,
+            mcp_protocol,
+            mcp_attempted,
         )
 
     if loaded.task.schema_version == "1.0":
@@ -302,14 +393,27 @@ def run_loaded_task(
     try:
         added_lines = parse_unified_diff(diff_text)
     except ToolError as exc:
+        if mcp_backend is not None:
+            mcp_records = _aborted_mcp_records(mcp_backend)
         return loaded.task, _failure_artifact(
-            loaded, provider_name, machine, trace, None, exc.code, exc.message
+            loaded,
+            provider_name,
+            machine,
+            trace,
+            None,
+            exc.code,
+            exc.message,
+            mcp_records,
+            mcp_protocol,
+            mcp_attempted,
         )
     if (
         loaded.task.tool_plan is not None
         and loaded.task.tool_plan.test_profile is not None
         and not any(added_lines.values())
     ):
+        if mcp_backend is not None:
+            mcp_records = _aborted_mcp_records(mcp_backend)
         return loaded.task, _failure_artifact(
             loaded,
             provider_name,
@@ -318,6 +422,9 @@ def run_loaded_task(
             None,
             "diff_no_added_lines",
             "tool verification requires at least one added line",
+            mcp_records,
+            mcp_protocol,
+            mcp_attempted,
         )
     if loaded.task.tool_plan is not None:
         if loaded.workspace_path is None or loaded.benchmark_root is None:
@@ -330,21 +437,41 @@ def run_loaded_task(
                 "invalid_path",
                 "tool workspace is unavailable",
             )
-        runner = test_runner
-        if runner is None:
-            runner = DockerTestRunner() if loaded.task.tool_plan.test_profile else _NoTests()
-        try:
-            workspace = Workspace(loaded.workspace_path, loaded.benchmark_root)
-            tool_run = execute_tool_plan(workspace, loaded.task.tool_plan, runner, diff_text)
-            trace = tool_run.trace
-        except ToolExecutionError as exc:
-            return loaded.task, _failure_artifact(
-                loaded, provider_name, machine, exc.trace, None, exc.code, exc.message
+        if tool_transport == "mcp-stdio":
+            assert mcp_backend is not None
+            tool_run, mcp_records, failure, failure_trace = _execute_mcp_tools(
+                mcp_backend, loaded.task.tool_plan, diff_text
             )
-        except ToolError as exc:
-            return loaded.task, _failure_artifact(
-                loaded, provider_name, machine, trace, None, exc.code, exc.message
-            )
+            trace = tool_run.trace if failure is None else failure_trace
+            if failure is not None:
+                return loaded.task, _failure_artifact(
+                    loaded,
+                    provider_name,
+                    machine,
+                    trace,
+                    tool_run.verification,
+                    failure.code,
+                    failure.message,
+                    mcp_records,
+                    mcp_protocol,
+                    mcp_attempted,
+                )
+        else:
+            try:
+                workspace = Workspace(loaded.workspace_path, loaded.benchmark_root)
+                runner = test_runner or (
+                    DockerTestRunner() if loaded.task.tool_plan.test_profile else _NoTests()
+                )
+                tool_run = execute_tool_plan(workspace, loaded.task.tool_plan, runner, diff_text)
+                trace = tool_run.trace
+            except ToolExecutionError as exc:
+                return loaded.task, _failure_artifact(
+                    loaded, provider_name, machine, exc.trace, None, exc.code, exc.message
+                )
+            except ToolError as exc:
+                return loaded.task, _failure_artifact(
+                    loaded, provider_name, machine, trace, None, exc.code, exc.message
+                )
 
     machine.advance(WorkflowState.ANALYSIS)
     context = ReviewContext(
@@ -380,7 +507,7 @@ def run_loaded_task(
     evaluation = evaluate_review(loaded.task.expected_findings, loaded.task.must_not_find, review)
     machine.advance(WorkflowState.COMPLETE)
     return loaded.task, RunArtifact(
-        schema_version="1.2",
+        schema_version="1.3" if tool_transport == "mcp-stdio" else "1.2",
         task_id=loaded.task.task_id,
         provider=provider_name,
         review=review,
@@ -401,11 +528,18 @@ def run_loaded_task(
         candidate_verifications=records,
         planner_version=PLANNER_VERSION,
         agent_version=AGENT_VERSION,
+        tool_transport="mcp_stdio" if tool_transport == "mcp-stdio" else None,
+        mcp_protocol_version=mcp_protocol,
+        mcp_servers=mcp_records,
+        semantic_trace_fingerprint=_semantic_trace_fingerprint(trace) if mcp_records else None,
     )
 
 
 def run_task(
-    task_path: Path, provider_name: str, model: str | None = None
+    task_path: Path,
+    provider_name: str,
+    model: str | None = None,
+    tool_transport: Literal["direct", "mcp-stdio"] = "direct",
 ) -> tuple[BenchmarkTask, RunArtifact]:
     if provider_name == "replay":
         if model is not None:
@@ -423,4 +557,4 @@ def run_task(
         )
     else:
         raise InputError("unsupported provider; expected replay, groq, or mistral")
-    return run_loaded_task(loaded, provider, provider_name)
+    return run_loaded_task(loaded, provider, provider_name, tool_transport=tool_transport)

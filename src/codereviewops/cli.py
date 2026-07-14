@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 import typer
 
@@ -58,11 +58,15 @@ def review(
         bool,
         typer.Option("--overwrite", help="Replace existing output artifacts."),
     ] = False,
+    tool_transport: Annotated[
+        Literal["direct", "mcp-stdio"],
+        typer.Option("--tool-transport", help="Tool transport: direct or mcp-stdio."),
+    ] = "direct",
 ) -> None:
     """Run one benchmark review and write its evaluation artifacts."""
 
     try:
-        benchmark, artifact = run_task(task, provider, model)
+        benchmark, artifact = run_task(task, provider, model, tool_transport=tool_transport)
         run_path, report_path = write_artifacts(
             output_dir, benchmark, artifact, overwrite=overwrite
         )
