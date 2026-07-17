@@ -6,12 +6,16 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import typer
+from alembic.util.exc import CommandError
+from sqlalchemy.exc import SQLAlchemyError
 
 from codereviewops.artifacts import write_artifacts
 from codereviewops.benchmark_baseline import create_baseline
 from codereviewops.benchmark_runner import BenchmarkRunError, run_benchmark
 from codereviewops.benchmark_selection import DEFAULT_SUITE
 from codereviewops.benchmarking import BenchmarkError, generate, validate
+from codereviewops.config import AppSettings, ConfigurationError
+from codereviewops.database import upgrade_database
 from codereviewops.docker_runner import DockerTestRunner
 from codereviewops.io import InputError
 from codereviewops.models import Category, Difficulty, WorkflowState
@@ -36,6 +40,21 @@ benchmark_app = typer.Typer(
 app.add_typer(benchmark_app, name="benchmark")
 baseline_app = typer.Typer(help="Create reviewed benchmark baselines.", no_args_is_help=True)
 benchmark_app.add_typer(baseline_app, name="baseline")
+db_app = typer.Typer(help="Manage the CodeReviewOps database schema.", no_args_is_help=True)
+app.add_typer(db_app, name="db")
+
+
+@db_app.command("upgrade")
+def db_upgrade() -> None:
+    """Upgrade the configured PostgreSQL database to the latest schema."""
+
+    try:
+        settings = AppSettings.from_environment()
+        upgrade_database(settings)
+    except (CommandError, ConfigurationError, OSError, SQLAlchemyError, ValueError):
+        typer.echo("error: database upgrade failed", err=True)
+        raise typer.Exit(code=2) from None
+    typer.echo("database schema upgraded")
 
 
 @benchmark_app.command("run")

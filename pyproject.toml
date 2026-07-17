@@ -9,6 +9,11 @@ description = "Deterministic reliability evaluation for code-review agents"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "alembic>=1.17,<2",
+  "fastapi>=0.128,<1",
+  "psycopg[binary]>=3.3,<4",
+  "sqlalchemy>=2.0.45,<3",
+  "uvicorn>=0.40,<1",
   "httpx>=0.28,<1",
   "mcp==1.27.2",
   "pydantic>=2.12,<3",
