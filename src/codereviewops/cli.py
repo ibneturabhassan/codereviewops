@@ -8,10 +8,13 @@ from typing import Annotated, Literal
 import typer
 
 from codereviewops.artifacts import write_artifacts
+from codereviewops.benchmark_baseline import create_baseline
+from codereviewops.benchmark_runner import BenchmarkRunError, run_benchmark
+from codereviewops.benchmark_selection import DEFAULT_SUITE
 from codereviewops.benchmarking import BenchmarkError, generate, validate
 from codereviewops.docker_runner import DockerTestRunner
 from codereviewops.io import InputError
-from codereviewops.models import WorkflowState
+from codereviewops.models import Category, Difficulty, WorkflowState
 from codereviewops.tools import ToolError
 from codereviewops.workflow import run_task
 
@@ -31,6 +34,66 @@ benchmark_app = typer.Typer(
     no_args_is_help=True,
 )
 app.add_typer(benchmark_app, name="benchmark")
+baseline_app = typer.Typer(help="Create reviewed benchmark baselines.", no_args_is_help=True)
+benchmark_app.add_typer(baseline_app, name="baseline")
+
+
+@benchmark_app.command("run")
+def benchmark_run(
+    output_dir: Annotated[Path, typer.Option("--output-dir")],
+    suite: Annotated[Path, typer.Option("--suite")] = DEFAULT_SUITE,
+    matrix: Annotated[Path | None, typer.Option("--matrix")] = None,
+    task: Annotated[list[str] | None, typer.Option("--task")] = None,
+    category: Annotated[list[Category] | None, typer.Option("--category")] = None,
+    difficulty: Annotated[list[Difficulty] | None, typer.Option("--difficulty")] = None,
+    positive: Annotated[bool, typer.Option("--positive")] = False,
+    negative: Annotated[bool, typer.Option("--negative")] = False,
+    allow_live: Annotated[bool, typer.Option("--allow-live")] = False,
+    max_live_requests: Annotated[int | None, typer.Option("--max-live-requests")] = None,
+    no_baseline: Annotated[bool, typer.Option("--no-baseline")] = False,
+) -> None:
+    """Run a stable benchmark matrix and publish one transactional result tree."""
+
+    if positive and negative:
+        typer.echo("error: choose only one polarity filter", err=True)
+        raise typer.Exit(code=2)
+    polarity = "positive" if positive else "negative" if negative else None
+    try:
+        result, exit_code = run_benchmark(
+            suite_path=suite,
+            output_dir=output_dir,
+            matrix_path=matrix,
+            task_ids=set(task) if task else None,
+            categories=set(category) if category else None,
+            difficulties=set(difficulty) if difficulty else None,
+            polarity=polarity,
+            allow_live=allow_live,
+            max_live_requests=max_live_requests,
+            use_baseline=not no_baseline,
+        )
+    except (BenchmarkRunError, InputError, OSError, ValueError):
+        typer.echo("error: benchmark run failed", err=True)
+        raise typer.Exit(code=2) from None
+    typer.echo(f"wrote {output_dir / 'benchmark.json'}")
+    if exit_code:
+        typer.echo("benchmark quality gate failed", err=True)
+        raise typer.Exit(code=exit_code)
+    typer.echo(f"benchmark passed: {result.matrix_id}")
+
+
+@baseline_app.command("create")
+def benchmark_baseline_create(
+    benchmark: Annotated[Path, typer.Option("--benchmark")],
+    output: Annotated[Path, typer.Option("--output")],
+) -> None:
+    """Create a new immutable baseline from a reviewed passing result."""
+
+    try:
+        create_baseline(benchmark, output)
+    except (InputError, OSError, ValueError):
+        typer.echo("error: baseline creation failed", err=True)
+        raise typer.Exit(code=2) from None
+    typer.echo(f"wrote {output}")
 
 
 @benchmark_app.command("generate")

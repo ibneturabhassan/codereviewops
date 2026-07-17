@@ -86,6 +86,29 @@ workspace mount, resource limits, a non-root user, and a 30-second deadline. Cod
 never sends benchmark-controlled shell commands to the host or container, and it does not
 fall back to host execution when Docker is unavailable.
 
+### Benchmark comparison and regression gates
+
+The canonical offline matrix runs all 25 generated tasks sequentially through replay with
+both direct and MCP stdio tools. It enforces perfect completion, task success, precision,
+recall, category recall, severity accuracy, positional tool-plan accuracy, and
+latency-neutral semantic trace equivalence. Latency and token counts are recorded but are
+not quality gates. Replay transport comparison verifies transport parity; it does not
+claim to compare prompt quality.
+
+    uv run codereviewops benchmark generate --source benchmarks/source --output-root benchmarks/tasks --check
+    uv run codereviewops benchmark validate --suite benchmarks/tasks/suites/m4_25.json
+    uv run codereviewops benchmark run --matrix benchmarks/matrices/m4_replay_transport_v1.json --output-dir artifacts/m4_replay
+
+A completed quality regression publishes its result and exits 1. Configuration,
+provider, workflow, or publication failures exit 2 without a final output directory.
+Live matrices are opt-in and require an explicit model, --allow-live, a process
+environment API key, and an exact --max-live-requests count. There is no .env
+loading, retry, fallback, or model substitution.
+
+Create a new baseline only after reviewing a complete passing result; existing baselines
+are never overwritten:
+
+    uv run codereviewops benchmark baseline create --benchmark artifacts/m4_replay/benchmark.json --output benchmarks/baselines/new_baseline.json
 ### Live inference
 Live runs require an explicit model and the provider's API key. The CLI reads only
 `GROQ_API_KEY` or `MISTRAL_API_KEY`; do not commit keys or place them in benchmark

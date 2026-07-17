@@ -57,6 +57,7 @@ line-length = 100
 exclude = [
   "benchmarks/source/*/before",
   "benchmarks/source/*/after",
+  "benchmarks/tasks/workspaces",
   "tests/fixtures/legacy_benchmarks",
 ]
 [tool.ruff.lint]

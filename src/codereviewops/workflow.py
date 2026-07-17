@@ -317,6 +317,7 @@ def run_loaded_task(
     provider_name: str = "replay",
     test_runner: TestRunner | None = None,
     tool_transport: Literal["direct", "mcp-stdio"] = "direct",
+    trusted_diff_text: str | None = None,
 ) -> tuple[BenchmarkTask, RunArtifact]:
     BenchmarkTask.model_validate(loaded.task.model_dump(mode="python"))
     machine = WorkflowMachine()
@@ -343,7 +344,11 @@ def run_loaded_task(
         )
         mcp_protocol = MCP_PROTOCOL_VERSION
     try:
-        diff_text = loaded.diff_path.read_text(encoding="utf-8")
+        diff_text = (
+            trusted_diff_text
+            if trusted_diff_text is not None
+            else loaded.diff_path.read_text(encoding="utf-8")
+        )
     except (OSError, UnicodeError):
         if loaded.task.schema_version == "1.0":
             raise InputError("diff is missing or inaccessible") from None

@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "matrix_id": "m4-replay-transport-v1",
+  "suite_path": "tasks/suites/m4_25.json",
+  "variants": [
+    {
+      "variant_id": "replay-direct",
+      "provider": "replay",
+      "model": null,
+      "request_budget": 0,
+      "prompt_version": "review-tools-v1",
+      "agent_version": "tool-agent-v1",
+      "planner_version": "manifest-v1",
+      "tool_transport": "direct"
+    },
+    {
+      "variant_id": "replay-mcp-stdio",
+      "provider": "replay",
+      "model": null,
+      "request_budget": 0,
+      "prompt_version": "review-tools-v1",
+      "agent_version": "tool-agent-v1",
+      "planner_version": "manifest-v1",
+      "tool_transport": "mcp-stdio"
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "direct-vs-mcp-stdio",
+      "baseline_variant": "replay-direct",
+      "candidate_variant": "replay-mcp-stdio"
+    }
+  ],
+  "threshold_profile": {
+    "completion_rate": 1.0,
+    "task_success_rate": 1.0,
+    "micro_precision": 1.0,
+    "micro_recall": 1.0,
+    "macro_precision": 1.0,
+    "macro_recall": 1.0,
+    "category_recall": 1.0,
+    "severity_accuracy": 1.0,
+    "tool_plan_accuracy": 1.0,
+    "trace_equivalence": 1.0,
+    "hallucination_rate": 0.0,
+    "missed_rate": 0.0,
+    "negative_false_positives": 0,
+    "prohibited_hits": 0
+  },
+  "baseline_path": "baselines/m4_replay_v1.json",
+  "max_concurrency": 1
+}

@@ -20,6 +20,12 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run ruff check .
       - run: uv run mypy src
+      - name: Generated benchmark drift check
+        run: >-
+          uv run codereviewops benchmark generate
+          --source benchmarks/source
+          --output-root benchmarks/tasks
+          --check
       - name: Local MCP stdio integration
         run: uv run pytest tests/test_mcp.py -m mcp
       - run: uv run pytest -m "not live and not docker"
@@ -47,6 +53,15 @@ jobs:
           --file runner/Dockerfile
           --tag codereviewops/python-unittest:0.1.0
           .
+      - name: Validate canonical benchmark suite
+        run: >-
+          uv run codereviewops benchmark validate
+          --suite benchmarks/tasks/suites/m4_25.json
+      - name: Strict replay transport regression
+        run: >-
+          uv run codereviewops benchmark run
+          --matrix benchmarks/matrices/m4_replay_transport_v1.json
+          --output-dir artifacts/m4-replay
       - name: Tool workflow replay smoke
         run: >-
           uv run codereviewops review

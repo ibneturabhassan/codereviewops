@@ -19,3 +19,14 @@ Regenerate and validate with:
     codereviewops benchmark generate --source benchmarks/source --output-root benchmarks/tasks
     codereviewops benchmark generate --source benchmarks/source --output-root benchmarks/tasks --check
     codereviewops benchmark validate --suite benchmarks/tasks/suites/m4_25.json
+
+The canonical comparison matrix is matrices/m4_replay_transport_v1.json. It runs the
+full suite through replay using direct and MCP stdio transports, gates every quality and
+semantic-trace metric at the strict profile, and compares against
+baselines/m4_replay_v1.json. Replay establishes deterministic transport parity; it is
+not evidence of prompt-quality differences. Baselines contain only stable semantic data
+and hashes, excluding timestamps, host paths, process identifiers, latency, and tokens.
+
+Run the strict regression harness after building the pinned Docker test image:
+
+    codereviewops benchmark run --matrix benchmarks/matrices/m4_replay_transport_v1.json --output-dir artifacts/m4_replay
