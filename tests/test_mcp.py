@@ -8,6 +8,7 @@ from pathlib import Path
 import anyio
 import pytest
 from mcp import types
+from typer.main import get_command
 from typer.testing import CliRunner
 
 import codereviewops.workflow as workflow
@@ -273,9 +274,8 @@ def test_mcp_call_deadline_returns_safe_timeout() -> None:
 
 def test_cli_exposes_transport_and_rejects_schema_10_mcp(tmp_path: Path) -> None:
     runner = CliRunner()
-    help_result = runner.invoke(app, ["review", "--help"], terminal_width=200, color=False)
-    assert help_result.exit_code == 0
-    assert "--tool-transport" in help_result.stdout
+    review_command = get_command(app).commands["review"]
+    assert any("--tool-transport" in option.opts for option in review_command.params)
     result = runner.invoke(
         app,
         [
