@@ -10,6 +10,25 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Any, Literal
 
+_WINDOWS_CREATE_NEW_PROCESS_GROUP = 0x00000200
+
+
+def _load_windows_kernel32() -> Any:
+    """Load the Windows API lazily so this module remains importable elsewhere."""
+    import ctypes
+
+    loader = getattr(ctypes, "WinDLL", None)
+    if loader is None:
+        raise OSError("Windows API loader is unavailable")
+    return loader("kernel32", use_last_error=True)
+
+
+def _windows_startup_info() -> Any:
+    factory = getattr(subprocess, "STARTUPINFO", None)
+    if factory is None:
+        raise OSError("Windows startup information is unavailable")
+    return factory()
+
 
 class ProcessTreeController:
     """Start a subprocess in its own tree and terminate/reap that tree."""
@@ -36,7 +55,7 @@ class ProcessTreeController:
         if self.platform == "posix":
             return {"start_new_session": True}
         if self.platform == "windows":
-            return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+            return {"creationflags": _WINDOWS_CREATE_NEW_PROCESS_GROUP}
         raise ValueError("process platform is unsupported")
 
     def _taskkill(self, pid: int) -> bool:
@@ -212,7 +231,7 @@ class _WindowsJobApi:
         from ctypes import wintypes
 
         self.ctypes = ctypes
-        self.kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        self.kernel32 = _load_windows_kernel32()
 
         class IoCounters(ctypes.Structure):
             _fields_ = [
@@ -329,7 +348,7 @@ class _WindowsJobApi:
         return int(event)
 
     def startup_info(self, barrier: int) -> Any:
-        startup = subprocess.STARTUPINFO()
+        startup = _windows_startup_info()
         startup.lpAttributeList = {"handle_list": [barrier]}
         return startup
 
@@ -371,7 +390,7 @@ class _WindowsProcessLease(ProcessLease):
 
     def popen_kwargs(self) -> dict[str, Any]:
         return {
-            "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP,
+            "creationflags": _WINDOWS_CREATE_NEW_PROCESS_GROUP,
             "close_fds": True,
             "startupinfo": self.api.startup_info(self.barrier),
         }

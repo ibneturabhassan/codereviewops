@@ -102,6 +102,14 @@ def test_windows_lease_assigns_before_release_retains_job_and_is_idempotent() ->
     assert api.calls.count(("close_handle", 10)) == 1
 
 
+def test_windows_lease_uses_portable_process_group_flag() -> None:
+    lease = ProcessTreeController(platform="windows", windows_api=FakeJobApi()).prepare()
+
+    assert lease.popen_kwargs()["creationflags"] == 0x00000200
+
+    lease.close()
+
+
 def test_windows_assignment_failure_never_releases_blocked_bootstrap() -> None:
     api = FakeJobApi(assign=False)
     lease = ProcessTreeController(platform="windows", windows_api=api).prepare()

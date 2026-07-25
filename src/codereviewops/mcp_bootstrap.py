@@ -5,9 +5,20 @@ from __future__ import annotations
 import os
 import sys
 from collections.abc import Callable
+from typing import Any
 
 _WAIT_OBJECT_0 = 0
 _BOOTSTRAP_TIMEOUT_MS = 10_000
+
+
+def _load_windows_kernel32() -> Any:
+    """Load the Windows API only after the Windows-only entrypoint guard."""
+    import ctypes
+
+    loader = getattr(ctypes, "WinDLL", None)
+    if loader is None:
+        raise OSError("Windows API loader is unavailable")
+    return loader("kernel32", use_last_error=True)
 
 
 def _server(kind: str) -> Callable[[], None]:
@@ -33,10 +44,9 @@ def main() -> int:
     if handle <= 0:
         return 2
 
-    import ctypes
     from ctypes import wintypes
 
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32 = _load_windows_kernel32()
     kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
     kernel32.WaitForSingleObject.restype = wintypes.DWORD
     kernel32.CloseHandle.argtypes = [wintypes.HANDLE]

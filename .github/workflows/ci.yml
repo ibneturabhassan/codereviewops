@@ -19,7 +19,8 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff format --check .
       - run: uv run ruff check .
-      - run: uv run mypy src
+      - run: uv run mypy --platform linux src
+      - run: uv run mypy --platform win32 src
       - name: Generated benchmark drift check
         run: >-
           uv run codereviewops benchmark generate
