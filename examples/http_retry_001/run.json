@@ -1,0 +1,307 @@
+{
+  "schema_version": "1.3",
+  "task_id": "http_retry_001",
+  "provider": "replay",
+  "review": {
+    "schema_version": "1.2",
+    "summary": "The replay reports exactly the source-authored findings.",
+    "overall_assessment": "needs_changes",
+    "findings": [
+      {
+        "line_start": 4,
+        "line_end": 4,
+        "title": "Retries client errors and permits an extra attempt.",
+        "severity": "high",
+        "category": "requirement_mismatch",
+        "file": "solution.py",
+        "evidence": "The added line is if status >= 400: continue.",
+        "reasoning": "Retries client errors and permits an extra attempt.",
+        "recommendation": "Revise the change to satisfy the stated contract.",
+        "confidence": 0.99,
+        "evidence_trace_ids": [
+          "tool-001"
+        ]
+      },
+      {
+        "line_start": 5,
+        "line_end": 5,
+        "title": "No immediate-return client-error regression is present.",
+        "severity": "medium",
+        "category": "missing_test",
+        "file": "tests/test_solution.py",
+        "evidence": "The added line is assert request([500, 200]) == 200.",
+        "reasoning": "No immediate-return client-error regression is present.",
+        "recommendation": "Revise the change to satisfy the stated contract.",
+        "confidence": 0.99,
+        "evidence_trace_ids": [
+          "tool-002"
+        ]
+      }
+    ],
+    "tests_run": [],
+    "limitations": []
+  },
+  "evaluation": {
+    "schema_version": "1.0",
+    "matched": [
+      {
+        "expected_index": 0,
+        "actual_index": 0
+      },
+      {
+        "expected_index": 1,
+        "actual_index": 1
+      }
+    ],
+    "missed_expected_indices": [],
+    "hallucinated_actual_indices": [],
+    "prohibited_hits": [],
+    "precision": 1.0,
+    "recall": 1.0,
+    "hallucination_rate": 0.0,
+    "task_success": true
+  },
+  "requested_model": null,
+  "response_model": null,
+  "prompt_version": null,
+  "structured_output_mode": "replay",
+  "latency_ms": 0.0,
+  "usage": null,
+  "final_state": "complete",
+  "state_transitions": [
+    {
+      "order": 1,
+      "from_state": "intake",
+      "to_state": "context"
+    },
+    {
+      "order": 2,
+      "from_state": "context",
+      "to_state": "analysis"
+    },
+    {
+      "order": 3,
+      "from_state": "analysis",
+      "to_state": "verification"
+    },
+    {
+      "order": 4,
+      "from_state": "verification",
+      "to_state": "report"
+    },
+    {
+      "order": 5,
+      "from_state": "report",
+      "to_state": "evaluation"
+    },
+    {
+      "order": 6,
+      "from_state": "evaluation",
+      "to_state": "complete"
+    }
+  ],
+  "tool_trace": [
+    {
+      "trace_id": "tool-001",
+      "order": 1,
+      "tool": "read_file",
+      "status": "succeeded",
+      "arguments": {
+        "kind": "read_file",
+        "path": "solution.py"
+      },
+      "result": {
+        "kind": "read_file_success",
+        "path": "solution.py",
+        "source_bytes": 119,
+        "normalized_bytes": 114,
+        "returned_bytes": 114,
+        "content": "# ruff: noqa\ndef review(statuses):\n    for status in statuses:\n        if status >= 400: continue\n    return None\n",
+        "truncated": false
+      },
+      "latency_ms": 61,
+      "influence": {
+        "finding_indices": [
+          0
+        ],
+        "report_sections": [
+          "findings"
+        ]
+      },
+      "provenance": [
+        {
+          "path": "solution.py",
+          "line_start": null,
+          "line_end": null
+        }
+      ]
+    },
+    {
+      "trace_id": "tool-002",
+      "order": 2,
+      "tool": "read_file",
+      "status": "succeeded",
+      "arguments": {
+        "kind": "read_file",
+        "path": "tests/test_solution.py"
+      },
+      "result": {
+        "kind": "read_file_success",
+        "path": "tests/test_solution.py",
+        "source_bytes": 110,
+        "normalized_bytes": 105,
+        "returned_bytes": 105,
+        "content": "# ruff: noqa\nfrom solution import request\n\ndef test_normal_case():\n    assert request([500, 200]) == 200\n",
+        "truncated": false
+      },
+      "latency_ms": 30,
+      "influence": {
+        "finding_indices": [
+          1
+        ],
+        "report_sections": [
+          "findings"
+        ]
+      },
+      "provenance": [
+        {
+          "path": "tests/test_solution.py",
+          "line_start": null,
+          "line_end": null
+        }
+      ]
+    },
+    {
+      "trace_id": "tool-003",
+      "order": 3,
+      "tool": "search_code",
+      "status": "succeeded",
+      "arguments": {
+        "kind": "search_code",
+        "query": "if status >= 400: continue"
+      },
+      "result": {
+        "kind": "search_code_success",
+        "query": "if status >= 400: continue",
+        "files_total": 2,
+        "files_scanned": 2,
+        "files_skipped": 0,
+        "matches": [
+          {
+            "path": "solution.py",
+            "line": 4,
+            "column": 9,
+            "excerpt": "if status >= 400: continue"
+          }
+        ],
+        "truncated": false
+      },
+      "latency_ms": 63,
+      "influence": {
+        "finding_indices": [],
+        "report_sections": []
+      },
+      "provenance": [
+        {
+          "path": "solution.py",
+          "line_start": 4,
+          "line_end": 4
+        }
+      ]
+    }
+  ],
+  "verification": null,
+  "declared_tool_plan": {
+    "read_files": [
+      "solution.py",
+      "tests/test_solution.py"
+    ],
+    "searches": [
+      "if status >= 400: continue"
+    ],
+    "test_profile": null
+  },
+  "provider_status": "succeeded",
+  "candidate_review": {
+    "schema_version": "1.2",
+    "summary": "The replay reports exactly the source-authored findings.",
+    "overall_assessment": "needs_changes",
+    "findings": [
+      {
+        "line_start": 4,
+        "line_end": 4,
+        "title": "Retries client errors and permits an extra attempt.",
+        "severity": "high",
+        "category": "requirement_mismatch",
+        "file": "solution.py",
+        "evidence": "The added line is if status >= 400: continue.",
+        "reasoning": "Retries client errors and permits an extra attempt.",
+        "recommendation": "Revise the change to satisfy the stated contract.",
+        "confidence": 0.99,
+        "evidence_trace_ids": [
+          "tool-001"
+        ]
+      },
+      {
+        "line_start": 5,
+        "line_end": 5,
+        "title": "No immediate-return client-error regression is present.",
+        "severity": "medium",
+        "category": "missing_test",
+        "file": "tests/test_solution.py",
+        "evidence": "The added line is assert request([500, 200]) == 200.",
+        "reasoning": "No immediate-return client-error regression is present.",
+        "recommendation": "Revise the change to satisfy the stated contract.",
+        "confidence": 0.99,
+        "evidence_trace_ids": [
+          "tool-002"
+        ]
+      }
+    ],
+    "tests_run": [],
+    "limitations": []
+  },
+  "candidate_verifications": [
+    {
+      "candidate_index": 0,
+      "accepted": true,
+      "code": "accepted",
+      "evidence_trace_ids": [
+        "tool-001"
+      ]
+    },
+    {
+      "candidate_index": 1,
+      "accepted": true,
+      "code": "accepted",
+      "evidence_trace_ids": [
+        "tool-002"
+      ]
+    }
+  ],
+  "planner_version": "manifest-v1",
+  "agent_version": "tool-agent-v1",
+  "failure_code": null,
+  "failure_message": null,
+  "tool_transport": "mcp_stdio",
+  "mcp_protocol_version": "2025-11-25",
+  "mcp_servers": [
+    {
+      "server_name": "codereviewops-repo-mcp",
+      "server_version": "0.1.0",
+      "protocol_version": "2025-11-25",
+      "capability_fingerprint": "sha256:59bb371ffee5d4d65405a3ca79103f886881dba33946165a2bc7200951d5ca19",
+      "schema_fingerprint": "sha256:1e4760a9a4c192e4ca8cf984c198f5eaa9f15c881cbe96d890abe5fc7d5f352d",
+      "lifecycle": [
+        "planned",
+        "spawned",
+        "initialized",
+        "tools_validated",
+        "close_requested",
+        "closed"
+      ],
+      "failure_stage": null
+    }
+  ],
+  "semantic_trace_fingerprint": "sha256:28d823a36b522cf4a1741b4e750091a7badd5b5c3a6b7920c59fa91c566d137e"
+}

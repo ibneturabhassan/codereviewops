@@ -1,17 +1,71 @@
 # CodeReviewOps
 
+[![CI](https://github.com/ibneturabhassan/codereviewops/actions/workflows/ci.yml/badge.svg)](https://github.com/ibneturabhassan/codereviewops/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 CodeReviewOps is a local, deterministic harness for measuring whether a code-review
 agent finds expected problems in a pull request without inventing unsupported ones.
-Milestone 1 uses synthetic fixtures and a replay provider so evaluation is reproducible,
-auditable, and does not require API keys or network access. Milestone 2 adds direct,
-single-request Groq and Mistral inference for small opt-in evaluations; free-tier limits
-and model availability are controlled by those providers. Milestone 3 adds a bounded,
-manifest-driven tool workflow for deterministic workspace reads, literal code searches,
-and an opt-in isolated Python unittest profile. Milestone 4 phases 1-2 add two
-local, stdio-only MCP servers and a transport adapter while preserving the same bounded tool
-semantics.
+The current backend MVP combines reproducible replay, opt-in single-request Groq and
+Mistral inference, bounded evidence tools, local MCP stdio transport, isolated fixture
+tests, and a 25-task regression harness. SQLAlchemy and Alembic provide the persistence
+foundation; a public API and dashboard remain planned work.
 
-## What Milestone 1 does
+## Why this project matters
+
+AI code review is easy to demo and difficult to measure. A plausible review can still miss
+the required defect, invent an unsupported security issue, or depend on tools it never
+actually used. CodeReviewOps turns those failure modes into typed, repeatable evaluation:
+
+- expected findings are matched one-to-one instead of scored by vague similarity;
+- misses, hallucinations, prohibited claims, tool use, and evidence provenance are explicit;
+- replay runs are deterministic enough for CI regression gates;
+- live-provider runs remain opt-in, single-request, and never silently retry or switch models;
+- untrusted test fixtures run in a network-disabled, resource-bounded Docker sandbox.
+
+## Proof at a glance
+
+| Capability | Current implementation |
+| --- | --- |
+| Evaluation set | 25 generated, synthetic code-review tasks |
+| Review paths | Deterministic replay plus opt-in Groq and Mistral |
+| Tool transports | In-process direct tools and local MCP over stdio |
+| Reliability gates | Precision, recall, hallucinations, category/severity accuracy, tool-plan accuracy, and trace equivalence |
+| Isolation | Fixed Docker profile, no network, read-only inputs, resource and time limits |
+| Persistence | SQLAlchemy models and an Alembic PostgreSQL foundation; runtime persistence is not wired yet |
+| Verification | Linux CI, cross-platform type checks, offline tests, MCP integration, package build, and Docker integration |
+
+See a real replay result: [rendered review](examples/http_retry_001/report.md) and
+[versioned JSON artifact](examples/http_retry_001/run.json).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Manifest["Versioned benchmark manifest"] --> Split["Validated context boundary"]
+    Split --> Context["Issue, diff, and declared tool plan"]
+    Split --> Gold["Expected and prohibited findings"]
+    Context --> Workflow["Bounded review workflow"]
+    Workflow --> Provider["Replay / Groq / Mistral"]
+    Workflow --> Transport["Direct / local MCP stdio"]
+    Transport --> RepoTools["Bounded read and literal search"]
+    Transport --> TestProfile["Fixed test profile"]
+    TestProfile --> Sandbox["Network-disabled Docker test runner"]
+    Provider --> Report["Typed review and evidence trace"]
+    RepoTools --> Report
+    TestProfile --> Report
+    Report --> Eval["One-to-one evaluator"]
+    Gold --> Eval
+    Eval --> Gates["Metrics, baseline, and CI gates"]
+    Report -. "persistence foundation" .-> DB["PostgreSQL schema"]
+```
+
+The reviewer never receives golden labels. Tool choices are declared by the benchmark,
+and model output cannot supply shell commands, roots, environment variables, or Docker
+images. See [the architecture notes](docs/architecture.md) for the trust boundaries and
+execution paths.
+
+## Core evaluation loop
 
 - Loads an issue, pull-request diff, expected findings, and replay response from a
   versioned benchmark task.
@@ -143,10 +197,16 @@ The optional live smoke test is skipped unless explicitly enabled and configured
 
 ## Current scope and limitations
 
-The project intentionally has no GitHub integration, arbitrary shell tool, database,
-API, or dashboard. Replay output proves the evaluation boundary deterministically. Live
+The project intentionally has no live GitHub write integration, arbitrary shell tool,
+public API endpoints, or dashboard. It includes SQLAlchemy models, PostgreSQL configuration,
+and an initial Alembic migration as a persistence foundation, but review workflows do not
+persist runs yet. Replay output proves the evaluation boundary deterministically. Live
 inference measures a selected hosted model but remains a bounded, one-request workflow;
 tool context is gathered before that single request.
 
 Future milestones will expand the benchmark suite, model comparisons, and dashboard work.
 The current MCP scope is deliberately local and stdio-only.
+
+## License
+
+CodeReviewOps is available under the [MIT License](LICENSE).
