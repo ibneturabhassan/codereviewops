@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CodeReviewOps generated report preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f3f6fb;
+      color: #162033;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .page { width: 1400px; min-height: 920px; padding: 46px; }
+    .shell {
+      background: #ffffff;
+      border: 1px solid #dce3ed;
+      border-radius: 22px;
+      box-shadow: 0 18px 45px rgba(25, 39, 67, 0.10);
+      overflow: hidden;
+    }
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 32px;
+      padding: 32px 36px 26px;
+      border-bottom: 1px solid #e7ebf1;
+    }
+    .eyebrow {
+      margin: 0 0 9px;
+      color: #4f46e5;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: 31px; line-height: 1.2; letter-spacing: -.025em; }
+    .meta { margin: 10px 0 0; color: #64748b; font-size: 15px; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 4px;
+      padding: 10px 14px;
+      background: #ecfdf3;
+      border: 1px solid #a7f3d0;
+      border-radius: 999px;
+      color: #067647;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #12b76a; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid #e7ebf1; }
+    .metric { padding: 22px 28px; border-right: 1px solid #e7ebf1; }
+    .metric:last-child { border-right: 0; }
+    .metric-label { color: #64748b; font-size: 13px; font-weight: 650; }
+    .metric-value { margin-top: 7px; font-size: 26px; font-weight: 760; letter-spacing: -.02em; }
+    .metric-note { margin-top: 3px; color: #64748b; font-size: 12px; }
+    main { padding: 28px 36px 32px; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+    .section-note { color: #64748b; font-size: 13px; }
+    .finding {
+      display: grid;
+      grid-template-columns: 210px 1fr 1.12fr;
+      gap: 24px;
+      align-items: start;
+      padding: 18px 20px;
+      border: 1px solid #e3e8ef;
+      border-radius: 14px;
+      margin-bottom: 12px;
+    }
+    .finding-title { margin: 9px 0 5px; font-size: 15px; font-weight: 720; line-height: 1.35; }
+    .location { color: #64748b; font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .tag-high { background: #fff1f2; color: #be123c; }
+    .tag-medium { background: #fff7ed; color: #c2410c; }
+    .tag-category { margin-left: 5px; background: #eef2ff; color: #4338ca; }
+    .label { margin: 0 0 6px; color: #64748b; font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .copy { margin: 0; color: #334155; font-size: 13px; line-height: 1.55; }
+    .evidence {
+      padding: 11px 13px;
+      background: #f8fafc;
+      border-left: 3px solid #818cf8;
+      border-radius: 6px;
+      color: #334155;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .trace-wrap { margin-top: 26px; }
+    .trace {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid #e3e8ef;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .trace-item { position: relative; padding: 18px 20px 17px 48px; border-right: 1px solid #e3e8ef; }
+    .trace-item:last-child { border-right: 0; }
+    .trace-index {
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #ecfdf3;
+      color: #067647;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .trace-name { font-size: 13px; font-weight: 730; }
+    .trace-arg { margin-top: 5px; color: #475569; font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .trace-link { margin-top: 7px; color: #4f46e5; font-size: 11px; font-weight: 650; }
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 36px;
+      background: #f8fafc;
+      border-top: 1px solid #e7ebf1;
+      color: #64748b;
+      font-size: 12px;
+    }
+    .brand { color: #334155; font-weight: 760; letter-spacing: .02em; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <article class="shell" aria-label="Generated CodeReviewOps report preview">
+      <header>
+        <div>
+          <p class="eyebrow">Generated review artifact</p>
+          <h1>HTTP retry policy violates the issue contract</h1>
+          <p class="meta">http_retry_001 · replay provider · MCP stdio · schema 1.3</p>
+        </div>
+        <div class="status">Evaluation passed</div>
+      </header>
+
+      <section class="metrics" aria-label="Evaluation metrics">
+        <div class="metric"><div class="metric-label">Assessment</div><div class="metric-value">Needs changes</div><div class="metric-note">The code should not merge</div></div>
+        <div class="metric"><div class="metric-label">Precision</div><div class="metric-value">1.000</div><div class="metric-note">No unsupported findings</div></div>
+        <div class="metric"><div class="metric-label">Recall</div><div class="metric-value">1.000</div><div class="metric-note">All expected findings matched</div></div>
+        <div class="metric"><div class="metric-label">Hallucination rate</div><div class="metric-value">0.000</div><div class="metric-note">No prohibited claims</div></div>
+      </section>
+
+      <main>
+        <div class="section-head"><h2>Evidence-backed findings</h2><span class="section-note">2 findings · both linked to tool evidence</span></div>
+        <section class="finding">
+          <div>
+            <span class="tag tag-high">High</span><span class="tag tag-category">Requirement mismatch</span>
+            <p class="finding-title">Retries client errors and permits an extra attempt.</p>
+            <div class="location">solution.py:4</div>
+          </div>
+          <div><p class="label">Evidence</p><div class="evidence">if status &gt;= 400: continue</div></div>
+          <div><p class="label">Why it matters</p><p class="copy">The issue requires 4xx responses to return immediately and limits retries to three total attempts.</p></div>
+        </section>
+        <section class="finding">
+          <div>
+            <span class="tag tag-medium">Medium</span><span class="tag tag-category">Missing test</span>
+            <p class="finding-title">No immediate-return client-error regression is present.</p>
+            <div class="location">tests/test_solution.py:5</div>
+          </div>
+          <div><p class="label">Evidence</p><div class="evidence">assert request([500, 200]) == 200</div></div>
+          <div><p class="label">Why it matters</p><p class="copy">The test covers server recovery but never proves that a 4xx response avoids a retry.</p></div>
+        </section>
+
+        <section class="trace-wrap">
+          <div class="section-head"><h2>Auditable tool trace</h2><span class="section-note">All declared calls succeeded</span></div>
+          <div class="trace">
+            <div class="trace-item"><span class="trace-index">1</span><div class="trace-name">read_file</div><div class="trace-arg">path: solution.py</div><div class="trace-link">Supports finding 0</div></div>
+            <div class="trace-item"><span class="trace-index">2</span><div class="trace-name">read_file</div><div class="trace-arg">path: tests/test_solution.py</div><div class="trace-link">Supports finding 1</div></div>
+            <div class="trace-item"><span class="trace-index">3</span><div class="trace-name">search_code</div><div class="trace-arg">query: if status &gt;= 400</div><div class="trace-link">Confirms solution.py:4</div></div>
+          </div>
+        </section>
+      </main>
+
+      <footer><span class="brand">CodeReviewOps</span><span>Representative deterministic replay output · derived from examples/http_retry_001/run.json</span></footer>
+    </article>
+  </div>
+</body>
+</html>

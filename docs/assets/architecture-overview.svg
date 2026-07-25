@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800" role="img" aria-labelledby="title desc">
+  <title id="title">CodeReviewOps architecture overview</title>
+  <desc id="desc">A benchmark manifest is split into reviewer-visible context and hidden golden labels. A bounded workflow uses a provider and direct or MCP tools to create a typed report. The evaluator combines the report with hidden labels to produce metrics and CI gates.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#52606d"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title { font: 700 34px Inter, Segoe UI, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 17px Inter, Segoe UI, sans-serif; fill: #52606d; }
+      .lane { font: 700 14px Inter, Segoe UI, sans-serif; letter-spacing: 1.5px; fill: #475569; }
+      .node-title { font: 700 18px Inter, Segoe UI, sans-serif; fill: #0f172a; }
+      .node-copy { font: 400 14px Inter, Segoe UI, sans-serif; fill: #52606d; }
+      .small { font: 600 13px Inter, Segoe UI, sans-serif; fill: #475569; }
+      .edge { stroke: #52606d; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .edge-blue { stroke: #2563eb; stroke-width: 2.6; fill: none; marker-end: url(#arrow-blue); }
+      .edge-dashed { stroke: #d97706; stroke-width: 2.4; stroke-dasharray: 8 7; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1600" height="800" fill="#f8fafc"/>
+  <text x="64" y="66" class="title">How CodeReviewOps measures an AI code review</text>
+  <text x="64" y="98" class="subtitle">Golden labels stay outside the reviewer boundary; evidence, tool use, and outcomes remain auditable.</text>
+
+  <rect x="48" y="132" width="330" height="565" rx="22" fill="#eef2ff" stroke="#c7d2fe"/>
+  <rect x="410" y="132" width="742" height="565" rx="22" fill="#eff6ff" stroke="#bfdbfe"/>
+  <rect x="1184" y="132" width="368" height="565" rx="22" fill="#ecfdf5" stroke="#a7f3d0"/>
+
+  <text x="72" y="166" class="lane">BENCHMARK AUTHORITY</text>
+  <text x="434" y="166" class="lane">REVIEWER-VISIBLE BOUNDARY</text>
+  <text x="1208" y="166" class="lane">EVALUATION BOUNDARY</text>
+
+  <g filter="url(#shadow)">
+    <rect x="82" y="214" width="262" height="104" rx="16" fill="#ffffff" stroke="#a5b4fc"/>
+    <text x="108" y="250" class="node-title">Versioned task manifest</text>
+    <text x="108" y="278" class="node-copy">Issue, diff, tool plan</text>
+    <text x="108" y="299" class="node-copy">and replay response</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="82" y="442" width="262" height="112" rx="16" fill="#fff7ed" stroke="#fdba74"/>
+    <text x="108" y="478" class="node-title">Golden labels</text>
+    <text x="108" y="506" class="node-copy">Expected findings and</text>
+    <text x="108" y="527" class="node-copy">prohibited claims</text>
+  </g>
+  <text x="104" y="584" class="small">Never sent to the reviewer</text>
+
+  <g filter="url(#shadow)">
+    <rect x="446" y="214" width="196" height="104" rx="16" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="470" y="250" class="node-title">Bounded workflow</text>
+    <text x="470" y="278" class="node-copy">Validated context</text>
+    <text x="470" y="299" class="node-copy">and state machine</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="704" y="198" width="192" height="96" rx="16" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="730" y="236" class="node-title">Provider</text>
+    <text x="730" y="264" class="node-copy">Replay / Groq / Mistral</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="704" y="338" width="192" height="112" rx="16" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="730" y="375" class="node-title">Evidence tools</text>
+    <text x="730" y="403" class="node-copy">Direct / MCP stdio</text>
+    <text x="730" y="425" class="node-copy">Read, search, fixed tests</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="704" y="512" width="192" height="96" rx="16" fill="#fefce8" stroke="#fde047"/>
+    <text x="730" y="550" class="node-title">Docker isolation</text>
+    <text x="730" y="578" class="node-copy">No network · bounded</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="954" y="262" width="166" height="132" rx="16" fill="#dbeafe" stroke="#60a5fa"/>
+    <text x="980" y="302" class="node-title">Typed report</text>
+    <text x="980" y="330" class="node-copy">Findings + evidence</text>
+    <text x="980" y="352" class="node-copy">Trace + limitations</text>
+    <text x="980" y="374" class="node-copy">Versioned JSON</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1220" y="244" width="296" height="116" rx="16" fill="#ffffff" stroke="#6ee7b7"/>
+    <text x="1248" y="283" class="node-title">One-to-one evaluator</text>
+    <text x="1248" y="312" class="node-copy">Matches expected vs. actual</text>
+    <text x="1248" y="334" class="node-copy">without leaking labels</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1220" y="442" width="296" height="130" rx="16" fill="#d1fae5" stroke="#34d399"/>
+    <text x="1248" y="482" class="node-title">Metrics and CI gates</text>
+    <text x="1248" y="511" class="node-copy">Precision · recall · hallucinations</text>
+    <text x="1248" y="533" class="node-copy">Tool accuracy · trace equivalence</text>
+    <text x="1248" y="555" class="node-copy">Regression baseline</text>
+  </g>
+
+  <path d="M344 266 H446" class="edge-blue"/>
+  <path d="M642 252 H704" class="edge"/>
+  <path d="M642 286 C672 286 670 394 704 394" class="edge"/>
+  <path d="M896 246 C920 246 926 292 954 312" class="edge"/>
+  <path d="M896 394 H930 C942 394 944 362 954 350" class="edge"/>
+  <path d="M800 450 V512" class="edge"/>
+  <path d="M1120 328 H1220" class="edge-blue"/>
+  <path d="M1368 360 V442" class="edge-blue"/>
+  <path d="M344 498 H1148 C1182 498 1180 324 1220 318" class="edge-dashed"/>
+
+  <rect x="72" y="730" width="14" height="14" rx="3" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="96" y="742" class="small">Reviewer-visible data</text>
+  <rect x="282" y="730" width="14" height="14" rx="3" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="306" y="742" class="small">Hidden evaluation authority</text>
+  <line x1="540" y1="737" x2="580" y2="737" class="edge-dashed"/>
+  <text x="595" y="742" class="small">Labels bypass the reviewer</text>
+</svg>

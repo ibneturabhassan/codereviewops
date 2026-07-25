@@ -38,27 +38,11 @@ actually used. CodeReviewOps turns those failure modes into typed, repeatable ev
 See a real replay result: [rendered review](examples/http_retry_001/report.md) and
 [versioned JSON artifact](examples/http_retry_001/run.json).
 
+![Generated CodeReviewOps report showing metrics, evidence-backed findings, and an auditable tool trace](docs/assets/review-report-preview.png)
+
 ## Architecture
 
-```mermaid
-flowchart LR
-    Manifest["Versioned benchmark manifest"] --> Split["Validated context boundary"]
-    Split --> Context["Issue, diff, and declared tool plan"]
-    Split --> Gold["Expected and prohibited findings"]
-    Context --> Workflow["Bounded review workflow"]
-    Workflow --> Provider["Replay / Groq / Mistral"]
-    Workflow --> Transport["Direct / local MCP stdio"]
-    Transport --> RepoTools["Bounded read and literal search"]
-    Transport --> TestProfile["Fixed test profile"]
-    TestProfile --> Sandbox["Network-disabled Docker test runner"]
-    Provider --> Report["Typed review and evidence trace"]
-    RepoTools --> Report
-    TestProfile --> Report
-    Report --> Eval["One-to-one evaluator"]
-    Gold --> Eval
-    Eval --> Gates["Metrics, baseline, and CI gates"]
-    Report -. "persistence foundation" .-> DB["PostgreSQL schema"]
-```
+![Architecture diagram showing hidden golden labels, the bounded review workflow, typed reports, and evaluation gates](docs/assets/architecture-overview.svg)
 
 The reviewer never receives golden labels. Tool choices are declared by the benchmark,
 and model output cannot supply shell commands, roots, environment variables, or Docker
