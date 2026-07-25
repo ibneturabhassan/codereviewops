@@ -3,16 +3,18 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 
+import anyio
 import pytest
 
 import codereviewops.mcp_owned_backend as owned_backend
 import codereviewops.workflow as workflow
 from codereviewops.io import load_task
 from codereviewops.mcp_owned_backend import BackendState, McpStdioToolBackend
-from codereviewops.models import ToolPlan
+from codereviewops.models import McpServerRecord, ToolPlan
 from codereviewops.process_control import ProcessTreeController
 from codereviewops.tool_contracts import ToolError
 
@@ -128,6 +130,109 @@ def test_windows_active_process_query_failure_fails_cleanup() -> None:
     lease = ProcessTreeController(platform="windows", windows_api=api).prepare()
     assert lease.attach(FakeProcess())  # type: ignore[arg-type]
     assert not lease.terminate_and_verify()
+
+
+def test_failed_initialization_does_not_duplicate_close_requested() -> None:
+    backend = McpStdioToolBackend(
+        WORKSPACE_ROOT, BENCHMARK_ROOT, ToolPlan(read_files=["calculator.py"])
+    )
+
+    backend._record("repo", "spawned")
+    backend._fail("repo", "initialize", ToolError("mcp_lifecycle", "initialization failed"))
+    backend._record("repo", "close_requested")
+    backend._record("repo", "closed")
+    backend._record("repo", "close_requested")
+
+    [record] = backend.snapshot()
+    assert record["lifecycle"] == ["planned", "spawned", "failed", "close_requested", "closed"]
+    McpServerRecord.model_validate(record)
+
+
+def test_concurrent_failures_record_one_terminal_event() -> None:
+    backend = McpStdioToolBackend(
+        WORKSPACE_ROOT, BENCHMARK_ROOT, ToolPlan(read_files=["calculator.py"])
+    )
+    completed = threading.Event()
+
+    def fail() -> None:
+        backend._fail("repo", "initialize", ToolError("mcp_lifecycle", "initialization failed"))
+        completed.set()
+
+    with backend._record_lock:
+        worker = threading.Thread(target=fail)
+        worker.start()
+        assert not completed.wait(timeout=0.1)
+    worker.join()
+    backend._fail("repo", "shutdown", ToolError("mcp_lifecycle", "cleanup failed"))
+
+    [record] = backend.snapshot()
+    assert record["lifecycle"] == ["planned", "failed"]
+    assert record["failure_stage"] == "initialize"
+    McpServerRecord.model_validate(record)
+
+
+def test_cleanup_preserves_first_failure_stage() -> None:
+    backend = McpStdioToolBackend(
+        WORKSPACE_ROOT, BENCHMARK_ROOT, ToolPlan(read_files=["calculator.py"])
+    )
+    backend._fail("repo", "initialize", ToolError("mcp_lifecycle", "initialization failed"))
+
+    def fail_call(callback) -> None:
+        del callback
+        raise RuntimeError("cleanup failed")
+
+    class Context:
+        def __exit__(self, *args) -> None:
+            del args
+
+    backend._portal = SimpleNamespace(call=fail_call)
+    backend._portal_context = Context()
+    backend._stops["repo"] = SimpleNamespace(set=lambda: None)
+    backend._transports["repo"] = SimpleNamespace(process=SimpleNamespace(poll=lambda: 0))
+    backend.state = BackendState.FAILED
+
+    failure = backend.close()
+
+    assert failure is not None
+    [record] = backend.snapshot()
+    assert record["lifecycle"] == ["planned", "failed", "close_requested", "closed"]
+    assert record["failure_stage"] == "initialize"
+    McpServerRecord.model_validate(record)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX virtual-environment launcher")
+def test_child_python_executable_preserves_posix_venv_symlink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = tmp_path / "python3"
+    target.touch()
+    launcher = tmp_path / "venv" / "bin" / "python"
+    launcher.parent.mkdir(parents=True)
+    launcher.symlink_to(target)
+    monkeypatch.setattr(owned_backend.sys, "executable", str(launcher))
+
+    assert owned_backend._child_python_executable() == launcher.absolute()
+    assert owned_backend._child_python_executable().is_symlink()
+
+
+def test_invalid_child_executable_records_terminal_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unavailable() -> Path:
+        raise ToolError("mcp_lifecycle", "MCP Python executable is unavailable")
+
+    monkeypatch.setattr(owned_backend, "_child_python_executable", unavailable)
+    backend = McpStdioToolBackend(
+        WORKSPACE_ROOT, BENCHMARK_ROOT, ToolPlan(read_files=["calculator.py"])
+    )
+    ready = threading.Event()
+
+    anyio.run(backend._session_loop, "repo", {}, ready)
+
+    assert ready.is_set()
+    assert "repo" not in backend._stops
+    [record] = backend.snapshot()
+    assert record["lifecycle"] == ["planned", "failed"]
+    assert record["failure_stage"] == "spawn"
+    McpServerRecord.model_validate(record)
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX process-group integration")

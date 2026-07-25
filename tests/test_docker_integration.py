@@ -16,7 +16,7 @@ pytestmark = pytest.mark.docker
 
 def test_full_tool_workflow_uses_pinned_runner() -> None:
     root = Path(__file__).parents[1]
-    loaded = load_task(root / "benchmarks" / "tasks" / "python_tools_001.json")
+    loaded = load_task(root / "tests" / "fixtures" / "legacy_benchmarks" / "python_tools_001.json")
     provider = ReplayProvider(loaded.replay_path)
     task, artifact = run_loaded_task(loaded, provider, test_runner=DockerTestRunner())
     assert task.task_id == "python_tools_001"

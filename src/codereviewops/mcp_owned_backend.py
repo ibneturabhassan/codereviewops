@@ -79,6 +79,13 @@ def _expected_tools(kind: Kind) -> list[dict[str, Any]]:
     ]
 
 
+def _child_python_executable() -> Path:
+    executable = Path(os.path.abspath(sys.executable))
+    if not executable.is_absolute() or not executable.is_file():
+        raise ToolError("mcp_lifecycle", "MCP Python executable is unavailable")
+    return executable
+
+
 class McpStdioToolBackend:
     def __init__(self, workspace: Path, benchmark_root: Path, plan: ToolPlan) -> None:
         self.workspace = workspace.resolve(strict=True)
@@ -87,6 +94,7 @@ class McpStdioToolBackend:
             raise ToolError("mcp_lifecycle", "MCP workspace authority is invalid")
         self.plan = plan
         self._kinds = _planned_kinds(plan)
+        self._record_lock = threading.RLock()
         self._records: dict[Kind, dict[str, Any]] = {
             kind: {
                 "server_name": expected_server_name(kind),
@@ -108,7 +116,11 @@ class McpStdioToolBackend:
 
     @property
     def records(self) -> list[dict[str, Any]]:
-        return [dict(self._records[kind]) for kind in self._kinds]
+        with self._record_lock:
+            return [
+                {**self._records[kind], "lifecycle": list(self._records[kind]["lifecycle"])}
+                for kind in self._kinds
+            ]
 
     @property
     def protocol_version(self) -> str:
@@ -142,14 +154,19 @@ class McpStdioToolBackend:
             self._record(kind, "skipped")
 
     def _record(self, kind: Kind, event: str) -> None:
-        lifecycle = self._records[kind]["lifecycle"]
-        if not lifecycle or lifecycle[-1] != event:
-            lifecycle.append(event)
+        with self._record_lock:
+            lifecycle = self._records[kind]["lifecycle"]
+            if event not in lifecycle:
+                lifecycle.append(event)
 
     def _fail(self, kind: Kind, stage: str, error: ToolError) -> None:
-        self._records[kind]["failure_stage"] = stage
-        self._errors[kind] = error
-        self._record(kind, "failed")
+        with self._record_lock:
+            lifecycle = self._records[kind]["lifecycle"]
+            if "failed" in lifecycle:
+                return
+            self._records[kind]["failure_stage"] = stage
+            self._errors[kind] = error
+            lifecycle.append("failed")
 
     def _system_root(self) -> str | None:
         if os.name != "nt":
@@ -258,13 +275,12 @@ class McpStdioToolBackend:
             "codereviewops.mcp_repo_server" if kind == "repo" else "codereviewops.mcp_test_server"
         )
         stop = anyio.Event()
-        self._stops[kind] = stop
-        transport = OwnedStdioTransport(
-            Path(sys.executable).resolve(strict=True), module, environment
-        )
-        self._transports[kind] = transport
+        transport: OwnedStdioTransport | None = None
         stage = "spawn"
         try:
+            transport = OwnedStdioTransport(_child_python_executable(), module, environment)
+            self._transports[kind] = transport
+            self._stops[kind] = stop
             async with transport as streams:
                 self._record(kind, "spawned")
                 stage = "initialize"
@@ -289,9 +305,13 @@ class McpStdioToolBackend:
         except Exception:
             self._fail(kind, stage, ToolError("mcp_lifecycle", "MCP server lifecycle failed"))
         finally:
-            if "close_requested" not in self._records[kind]["lifecycle"]:
+            if transport is not None and "close_requested" not in self._records[kind]["lifecycle"]:
                 self._record(kind, "close_requested")
-            if transport.process is not None and transport.process.poll() is not None:
+            if (
+                transport is not None
+                and transport.process is not None
+                and transport.process.poll() is not None
+            ):
                 self._record(kind, "closed")
             ready.set()
 
@@ -412,30 +432,42 @@ class McpStdioToolBackend:
                     self._portal.call(stop.set)
                 except Exception:
                     cleanup_error = True
-                    self._records[kind]["failure_stage"] = "shutdown"
-                    self._record(kind, "failed")
+                    self._fail(
+                        kind,
+                        "shutdown",
+                        ToolError("mcp_lifecycle", "MCP process cleanup failed"),
+                    )
             for kind, future in self._futures.items():
                 try:
                     future.result(timeout=_SHUTDOWN_TIMEOUT)
                 except Exception:
                     cleanup_error = True
-                    self._records[kind]["failure_stage"] = "shutdown"
-                    self._record(kind, "failed")
+                    self._fail(
+                        kind,
+                        "shutdown",
+                        ToolError("mcp_lifecycle", "MCP process cleanup failed"),
+                    )
             try:
                 assert self._portal_context is not None
                 self._portal_context.__exit__(None, None, None)
             except Exception:
                 cleanup_error = True
                 for kind in self._stops:
-                    self._records[kind]["failure_stage"] = "client_runtime"
-                    self._record(kind, "failed")
+                    self._fail(
+                        kind,
+                        "client_runtime",
+                        ToolError("mcp_lifecycle", "MCP process cleanup failed"),
+                    )
         for kind, transport in self._transports.items():
             if transport.process is not None and transport.process.poll() is not None:
                 self._record(kind, "closed")
             else:
                 cleanup_error = True
-                self._records[kind]["failure_stage"] = "shutdown"
-                self._record(kind, "failed")
+                self._fail(
+                    kind,
+                    "shutdown",
+                    ToolError("mcp_lifecycle", "MCP process cleanup failed"),
+                )
         if cleanup_error:
             self._close_error = ToolError("mcp_lifecycle", "MCP process cleanup failed")
         self.state = (
