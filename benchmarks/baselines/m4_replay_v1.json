@@ -1005,7 +1005,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:3f31006f74c5b1634900eb0df4162162ceccf82aa488f83854b6f4a374dd313a"
+            "semantic_trace_fingerprint": "sha256:28d823a36b522cf4a1741b4e750091a7badd5b5c3a6b7920c59fa91c566d137e"
           },
           {
             "task_id": "python_tools_001",
@@ -1039,7 +1039,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:e5155b89d04f8c33a6bf279af8b7a2400eca9e0691949062ab9742177fbfb2be"
+            "semantic_trace_fingerprint": "sha256:5a985b53baa89272e2507ab0d04de14a1a0f39d33544a2dc14548426932829e8"
           },
           {
             "task_id": "pagination_boundary_001",
@@ -1075,7 +1075,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:13a4130d7af997a94d423649aff03b4017436e82d487b456e086a4cdf13b7a51"
+            "semantic_trace_fingerprint": "sha256:420399d5393475c41d21296122fb4b034c56e59040db88c14883c1935348dcc8"
           },
           {
             "task_id": "nullable_header_001",
@@ -1109,7 +1109,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:fe6edbcf22727d63608fa78608231a834c678ecda0384615819cd12e0eb4cc18"
+            "semantic_trace_fingerprint": "sha256:d6a0d7047e5de799982161b80c2629a49d908136b29bb8dccca8328aae12aa61"
           },
           {
             "task_id": "timezone_rollover_001",
@@ -1143,7 +1143,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:ce209dd3a87b97163e6a043ab7fcc6aa0eb1fce2146ba20bea462dd00b639105"
+            "semantic_trace_fingerprint": "sha256:c0de2955725d190eb41a8d60ee7a6efdbd0c4b95161130563b43df8c47d1e2cd"
           },
           {
             "task_id": "status_contract_001",
@@ -1177,7 +1177,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:0a79c531cdbd58b919ea08abf70d91d3934376ea6d09c3cb5f2007740f344834"
+            "semantic_trace_fingerprint": "sha256:9179c5f4a1ba736e40b9a63428240bfb1cb918282c61901b9bcf7db4f26bbe6c"
           },
           {
             "task_id": "stable_order_001",
@@ -1211,7 +1211,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:046bb7a881d3ceb81eedef5d4997627acb68a2c8ecd4192d4bd5b44771fdcda1"
+            "semantic_trace_fingerprint": "sha256:172156675f20cbec9d1965ab9e1d29eefeda6de878d1cb2c9cb6299e444677e6"
           },
           {
             "task_id": "error_shape_001",
@@ -1245,7 +1245,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:e7a5d57dcb7183575c68ea7201bcde42df01f85fbab9a349bde8bce8175241c2"
+            "semantic_trace_fingerprint": "sha256:55297b25500a2c75c421ec34d7e91d8cb289495a8f230e5fdf10b970f9123464"
           },
           {
             "task_id": "boundary_test_001",
@@ -1279,7 +1279,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:7ca1f3381f626ce465ad94614bf452ad863cdbae7f4dede3c71146e8ae6f97eb"
+            "semantic_trace_fingerprint": "sha256:dc6b2862dcb07e489a092647714800359d47ff71472e8a65cc8f522e5bcf223c"
           },
           {
             "task_id": "exception_test_001",
@@ -1313,7 +1313,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:9cf84c066fb507e0b2414c34e0044c3672fa3828a18a3b14b5c519128fb9ea62"
+            "semantic_trace_fingerprint": "sha256:78b5ee82428a26a7771a0beecc6d5c56ebc668cc7060e57ac24e40f1acf2e46f"
           },
           {
             "task_id": "retry_budget_test_001",
@@ -1347,7 +1347,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:c723f6f117504e57e70d4bc6b8ae5ac15a95178afa9619c7c0a4cb97c8a97c06"
+            "semantic_trace_fingerprint": "sha256:b37b4c2581ac1bcd91f84ea72423e148fece447821687bc3c81067638f637013"
           },
           {
             "task_id": "redirect_allowlist_001",
@@ -1383,7 +1383,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:56e821e57107b136ca5b1a05771d08785cd8df9b3401f48ff08c3b6427d4084c"
+            "semantic_trace_fingerprint": "sha256:006d0618997ad9ac4fba45b7e6629a51592372a1e4b94a5492c53f5537a24f8f"
           },
           {
             "task_id": "path_traversal_001",
@@ -1417,7 +1417,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:378418789e0fb0a03b76938d16e9a865b15a41921058b6c5a311954b17098625"
+            "semantic_trace_fingerprint": "sha256:d9b93a02d8e9fe3256aa0561f27f3d90ccc6114fe80c35de63da8be83a2ae468"
           },
           {
             "task_id": "token_redaction_001",
@@ -1451,7 +1451,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:b41d4ec75a82339bd7fda61363469feb2fbb8a04b70bbdd3d4f38d3b88cbe16f"
+            "semantic_trace_fingerprint": "sha256:9f6982b33bf7dfdbce1ab8481a2ca255cdb8fbe435263812ec5f771fa2f34ed1"
           },
           {
             "task_id": "repeated_regex_001",
@@ -1485,7 +1485,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:872b907af978bd86669410746a8235fcf8ba1228ad0d72726aa49b4c62876b4e"
+            "semantic_trace_fingerprint": "sha256:48c06eedbed4d8ee6c13ea87772c57e32b5b27ca18ac03fd1429d930de1692aa"
           },
           {
             "task_id": "quadratic_membership_001",
@@ -1519,7 +1519,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:55a2232e26a8e087afee1e5295353d5b3e5e0c2c4e4e3cd00429043e945c99b6"
+            "semantic_trace_fingerprint": "sha256:d3d297285c7ceb8894c4067e950fe09dfe7b7667f0fb941bc0a51e4f813806da"
           },
           {
             "task_id": "swallowed_exception_001",
@@ -1555,7 +1555,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:bea6c47a162d8d2f4aadda24da2add4705d5045cec4995ac12b1e40384b55b20"
+            "semantic_trace_fingerprint": "sha256:7a70ab378742294c05b146246964a1bde1c0b4d70a58046c2e398776ddd3d19e"
           },
           {
             "task_id": "duplicated_policy_001",
@@ -1589,7 +1589,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:f4545bbb81c242a38720af7f4028d193a4a28489af27d01ca231393e0960962e"
+            "semantic_trace_fingerprint": "sha256:3a62b095082ad5522fe8b6a24f1dde47b7a1facba405296b158f3544de84c953"
           },
           {
             "task_id": "misleading_default_001",
@@ -1623,7 +1623,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:9b56d2067003d891cd1e6a6413b796935fe2d56e4eec0f6e5935875bea9f45cb"
+            "semantic_trace_fingerprint": "sha256:bea9273743b764f65c92257b23b285a35bb6a9cca0e83ceee1864abf4d8ffeb6"
           },
           {
             "task_id": "zero_timeout_001",
@@ -1657,7 +1657,7 @@
             },
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:07d68e357c3ec4f73988664948d57dd6a578e498b0a0181a83852120267dcc44"
+            "semantic_trace_fingerprint": "sha256:3430f90726c5e7842129469c500636395d456bd7ecfb876eebe0d06198d8a056"
           },
           {
             "task_id": "clean_parser_001",
@@ -1687,7 +1687,7 @@
             "category_matched": {},
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:deb7fccd73f0fd453f654a3765c238e9b7bdc4f01bf050915702015a450577fc"
+            "semantic_trace_fingerprint": "sha256:8c505af532c8bf16eb6d88fa80d1027562f2bbbe0159d2017597667024c653d5"
           },
           {
             "task_id": "clean_retry_001",
@@ -1717,7 +1717,7 @@
             "category_matched": {},
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:deb7fccd73f0fd453f654a3765c238e9b7bdc4f01bf050915702015a450577fc"
+            "semantic_trace_fingerprint": "sha256:8c505af532c8bf16eb6d88fa80d1027562f2bbbe0159d2017597667024c653d5"
           },
           {
             "task_id": "clean_validation_001",
@@ -1747,7 +1747,7 @@
             "category_matched": {},
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:deb7fccd73f0fd453f654a3765c238e9b7bdc4f01bf050915702015a450577fc"
+            "semantic_trace_fingerprint": "sha256:8c505af532c8bf16eb6d88fa80d1027562f2bbbe0159d2017597667024c653d5"
           },
           {
             "task_id": "clean_cache_001",
@@ -1777,7 +1777,7 @@
             "category_matched": {},
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:deb7fccd73f0fd453f654a3765c238e9b7bdc4f01bf050915702015a450577fc"
+            "semantic_trace_fingerprint": "sha256:8c505af532c8bf16eb6d88fa80d1027562f2bbbe0159d2017597667024c653d5"
           },
           {
             "task_id": "clean_security_001",
@@ -1807,7 +1807,7 @@
             "category_matched": {},
             "rejection_codes": [],
             "test_statuses": [],
-            "semantic_trace_fingerprint": "sha256:deb7fccd73f0fd453f654a3765c238e9b7bdc4f01bf050915702015a450577fc"
+            "semantic_trace_fingerprint": "sha256:8c505af532c8bf16eb6d88fa80d1027562f2bbbe0159d2017597667024c653d5"
           }
         ],
         "metrics": {
@@ -1915,7 +1915,7 @@
       "contracts": "sha256:05fb13601a4d8cd949ef707ab5bc43935f988bfbfe0f208d328a59cb86b4c61c",
       "tasks": "sha256:d1edfcafa299b2ef10f07d5ecac14fe46de4884771f383bc9315c7c591c7510b",
       "suite": "sha256:6b3ad49b5f963d707870a88f30f303cc09a80b1b7527973039004da99bd2d77a",
-      "results": "sha256:8908f1157005aa7f9daa478084974be5e63613f6003fbca25fdb7948696cf010"
+      "results": "sha256:afd6f32e56e88c60f39102eb626d5bc17058fa08ebea02e2db60e6e91bd7b0b0"
     }
   },
   "hashes": {
@@ -1926,6 +1926,6 @@
     "contracts": "sha256:05fb13601a4d8cd949ef707ab5bc43935f988bfbfe0f208d328a59cb86b4c61c",
     "tasks": "sha256:d1edfcafa299b2ef10f07d5ecac14fe46de4884771f383bc9315c7c591c7510b",
     "suite": "sha256:6b3ad49b5f963d707870a88f30f303cc09a80b1b7527973039004da99bd2d77a",
-    "results": "sha256:8908f1157005aa7f9daa478084974be5e63613f6003fbca25fdb7948696cf010"
+    "results": "sha256:afd6f32e56e88c60f39102eb626d5bc17058fa08ebea02e2db60e6e91bd7b0b0"
   }
 }

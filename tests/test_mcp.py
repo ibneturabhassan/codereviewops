@@ -202,6 +202,16 @@ def test_workflow_mcp_transport_emits_13_and_matches_direct(monkeypatch) -> None
     assert mcp.evaluation == direct.evaluation
     assert mcp.candidate_verifications == direct.candidate_verifications
     assert mcp.semantic_trace_fingerprint is not None
+    portable_payload = mcp.model_dump(mode="python")
+    read_result = next(
+        entry["result"]
+        for entry in portable_payload["tool_trace"]
+        if entry["result"]["kind"] == "read_file_success"
+    )
+    read_result["source_bytes"] += 7
+    assert type(mcp).model_validate(portable_payload).semantic_trace_fingerprint == (
+        mcp.semantic_trace_fingerprint
+    )
     payload = mcp.model_dump(mode="python")
     payload["semantic_trace_fingerprint"] = "sha256:" + "0" * 64
     with pytest.raises(ValueError, match="semantic tool trace fingerprint is invalid"):
@@ -263,7 +273,7 @@ def test_mcp_call_deadline_returns_safe_timeout() -> None:
 
 def test_cli_exposes_transport_and_rejects_schema_10_mcp(tmp_path: Path) -> None:
     runner = CliRunner()
-    help_result = runner.invoke(app, ["review", "--help"])
+    help_result = runner.invoke(app, ["review", "--help"], terminal_width=200, color=False)
     assert help_result.exit_code == 0
     assert "--tool-transport" in help_result.stdout
     result = runner.invoke(

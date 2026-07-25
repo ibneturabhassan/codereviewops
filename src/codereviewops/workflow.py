@@ -53,6 +53,9 @@ def _semantic_trace_fingerprint(trace: list[ToolTraceEntry]) -> str:
     for entry in trace:
         data = entry.model_dump(mode="json")
         data["latency_ms"] = 0
+        result = data["result"]
+        if result.get("kind") == "read_file_success":
+            result["source_bytes"] = result["normalized_bytes"]
         semantic.append(data)
     encoded = json.dumps(semantic, sort_keys=True, separators=(",", ":")).encode()
     return "sha256:" + hashlib.sha256(encoded).hexdigest()

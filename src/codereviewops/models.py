@@ -824,6 +824,9 @@ class RunArtifact(StrictModel):
         for entry in self.tool_trace:
             serialized = entry.model_dump(mode="json")
             serialized["latency_ms"] = 0
+            result = serialized["result"]
+            if result.get("kind") == "read_file_success":
+                result["source_bytes"] = result["normalized_bytes"]
             semantic_trace.append(serialized)
         encoded = json.dumps(
             semantic_trace, sort_keys=True, separators=(",", ":"), ensure_ascii=True

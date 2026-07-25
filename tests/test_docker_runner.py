@@ -259,9 +259,7 @@ def test_docker_exit_classification(
 
 def test_process_controller_uses_platform_group_creation_flags() -> None:
     assert ProcessTreeController(platform="posix").popen_kwargs() == {"start_new_session": True}
-    assert ProcessTreeController(platform="windows").popen_kwargs() == {
-        "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP
-    }
+    assert ProcessTreeController(platform="windows").popen_kwargs() == {"creationflags": 0x00000200}
 
 
 def test_posix_process_controller_terminates_and_reaps_group(monkeypatch) -> None:
